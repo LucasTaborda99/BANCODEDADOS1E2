@@ -205,6 +205,12 @@ SELECT * FROM pedido
 
 -----7-----
 SELECT year(GETDATE()),* FROM nota
+SELECT concat (year(getdate()), (month(getdate()),(day(getdate())
 
 UPDATE nota 
-set cidade = 'Curitiba', estado = 'PR', dataemissao = 'GETDATE()'
+set cidade = 'Curitiba', estado = 'PR', dataemissão = concat (year(getdate()), month(getdate()), day(getdate()))
+SELECT * FROM nota
+
+UPDATE pedido 
+set datadeemissão = concat (year(getdate()), month(getdate()), day(getdate()))
+SELECT * FROM pedido
