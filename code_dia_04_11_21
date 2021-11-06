@@ -303,11 +303,14 @@ SELECT DATEDIFF (DAY, '20211104', '20210521')
 SELECT DATEDIFF (MONTH, '20210521', '20211121')
 SELECT dataemissao, DATEDIFF (YEAR, '20150515', dataemissao) as 'Diferença em anos 'FROM solicitacao
 
------------------ Minha idade em DIAS, MESES e ANOS -----------------------------
+----------------- Minha idade em DIAS, MESES, ANOS, HORAS, MINUTOS E SEGUNDOS -----------------------------
 
-SELECT DATEDIFF (DAY, '19991009', GETDATE())
-SELECT DATEDIFF (MONTH, '19991009', '20211104')
-SELECT DATEDIFF (YEAR, '19991009', GETDATE())
+SELECT DATEDIFF (DAY, '19990910', GETDATE()) as 'Dias vividos'
+SELECT DATEDIFF (MONTH, '19990910', GETDATE()) as 'Meses vividos'
+SELECT DATEDIFF (YEAR, '19990910', GETDATE()) as 'Anos vividos'
+SELECT DATEDIFF (HOUR, '19990910', GETDATE()) as 'Horas vividas aproximadamente'
+SELECT DATEDIFF (MINUTE, '19990910', GETDATE()) as 'Minutos vividos aproximadamente'
+SELECT DATEDIFF (SECOND, '19990910', GETDATE()) as 'Segundos vividos aproximadamente'
 
 ---------------------------------------------------------------------------------
 
@@ -333,3 +336,27 @@ inner join pedido p
 on p.id = c.fk_pedido_id
 
 WHERE MONTH (s.dataemissao) in (5,7,8,10,11) 
+
+-----11-----
+SELECT DATEADD (DAY, 10, s.dataemissao), DATEADD (MONTH, 5, p.data) FROM solicitacao s
+
+inner join cotacao c
+on s.id = c.fk_solicitacao_id
+
+inner join pedido p
+on p.id = c.fk_pedido_id
+
+and p.id not in (5, 7, 9)
+
+-----12-----
+SELECT DATEDIFF(DAY, p.data,  s.dataemissao) as 'Diferença em dias',
+DATEDIFF(MONTH, p.data,  s.dataemissao) as 'Diferença em meses' 
+FROM solicitacao s
+
+inner join cotacao c
+on s.id = c.fk_solicitacao_id
+
+inner join pedido p
+on p.id = c.fk_pedido_id
+
+WHERE YEAR (s.dataemissao) != 2020
