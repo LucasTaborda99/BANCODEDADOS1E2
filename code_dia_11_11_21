@@ -360,3 +360,182 @@ inner join pedido p
 on p.id = c.fk_pedido_id
 
 WHERE YEAR (s.dataemissao) != 2020
+
+--------------------- 11/11/21 ------------------------
+
+----- Atualização de campos (atributos) da tabela -----
+
+select * from solicitacao
+
+--1000.99
+--500.99
+--1500.99
+
+--set valor = 500
+UPDATE solicitacao 
+set valor = 500
+
+UPDATE solicitacao 
+set valor = 2348
+where id = 3
+
+UPDATE solicitacao 
+set valor = 2348, nomeproduto = 'CPU'
+
+--select LEN(nomeproduto) as 'Tamanho',* from solicitacao
+
+where id = 1
+and codproduto = 10
+and YEAR(dataemissao) = 2021
+and nomeproduto like ('%U%')
+--and nomeproduto like ('%o')
+and LEN(nomeproduto) > 2
+
+select * from solicitacao
+
+--------------- UPDATE com relacionamento entre tabelas ----------------------
+
+select * 
+
+--UPDATE solicitacao
+--set valor = 1000
+
+from solicitacao s
+inner join cotacao c
+on s.id =  c.fk_solicitacao_id
+
+where c.id > 1
+--and MONTH(s.dataemissao) >=  1
+--and MONTH(s.dataemissao) in (1, 2)
+and MONTH(s.dataemissao) between 1 and 2
+
+select * from solicitacao
+select * from cotacao
+
+--------------- UPDATE com valores variáveis ----------------------
+
+select len(s.nomeproduto) * day(s.dataemissao),*
+
+--UPDATE solicitacao
+--set valor = len(s.nomeproduto) * day(s.dataemissao)
+
+from solicitacao s
+inner join cotacao c
+on s.id =  c.fk_solicitacao_id
+
+where c.id > 1
+and MONTH(s.dataemissao) >=  1
+
+------------------------------------------------------
+
+select s.valor * c.qtde,*
+
+--UPDATE solicitacao
+--set valor = s.valor * c.qtde
+
+from solicitacao s
+inner join cotacao c
+on s.id =  c.fk_solicitacao_id
+
+where c.id > 1
+and MONTH(s.dataemissao) >=  1
+
+---------------------- 1 -------------------------
+SELECT * 
+
+--UPDATE pedido
+--set valortotal = (c.qtde * c.valorunit)
+
+FROM solicitacao s
+inner join cotacao c
+on s.id = c.fk_solicitacao_id
+
+inner join pedido p
+on p.id = c.fk_pedido_id
+
+where year(s.dataemissao) = 2021
+
+---------------------- 2 -------------------------
+SELECT c.valortotal, c.qtde, c.valorunit
+--UPDATE cotacao
+--set valortotal = c.qtde * c.valorunit
+FROM cotacao c
+
+---------------------- 3 -------------------------
+SELECT s.valor, p.valorunit
+
+--UPDATE solicitacao
+--set valor = (p.valorunit * 0.20) + p.valorunit
+
+FROM solicitacao s
+inner join cotacao c
+on s.id = c.fk_solicitacao_id
+and c.id >= 1
+
+inner join pedido p
+on p.id = c.fk_pedido_id
+
+---------------------- 4 -------------------------
+SELECT c.valorunit, p.valorunit, n.valorunit
+
+--UPDATE cotacao
+--set valorunit = c.valorunit - (c.valorunit * 0.10)
+
+--UPDATE pedido
+--set valorunit = p.valorunit - (p.valorunit * 0.10)
+
+--UPDATE nota
+--set valorunit = n.valorunit - (n.valorunit * 0.10)
+
+FROM solicitacao s
+inner join cotacao c
+on s.id = c.fk_solicitacao_id
+and c.id >= 1
+
+inner join pedido p
+on p.id = c.fk_pedido_id
+
+inner join nota n
+on n.id = p.fk_nota_id
+
+where s.id != 3
+
+---------------------- 5 -------------------------
+SELECT p.valortotal
+
+--UPDATE pedido
+--set valortotal = (month(getdate()) * c.id) - day(getdate()) + year(getdate()) 
+
+FROM solicitacao s
+
+inner join cotacao c
+on s.id = c.fk_solicitacao_id
+
+inner join pedido p
+on p.id = c.fk_pedido_id
+
+WHERE year(s.dataemissao) > 2019
+
+---------------------- 6 -------------------------
+SELECT c.qtde, c.valorunit, c.valortotal, n.qtde, n.valorunit, n.valortotal
+
+--UPDATE cotacao
+--set qtde =  n.qtde
+
+--UPDATE cotacao
+--set valorunit =  n.valorunit
+
+--UPDATE cotacao
+--set valortotal =  n.valortotal
+
+FROM cotacao c
+
+inner join pedido p
+on c.fk_pedido_id = p.id
+
+inner join nota n
+on n.id = p.fk_nota_id
+and n.id in (1,3)
+
+
+
