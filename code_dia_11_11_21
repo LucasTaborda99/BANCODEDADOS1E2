@@ -458,14 +458,14 @@ where year(s.dataemissao) = 2021
 ---------------------- 2 -------------------------
 SELECT c.valortotal, c.qtde, c.valorunit
 --UPDATE cotacao
---set valortotal = c.qtde * c.valorunit
+--set valortotal = qtde * valorunit
 FROM cotacao c
 
 ---------------------- 3 -------------------------
 SELECT s.valor, p.valorunit
 
 --UPDATE solicitacao
---set valor = (p.valorunit * 0.20) + p.valorunit
+--set valor = s.valor + (p.valorunit * 0.2)
 
 FROM solicitacao s
 inner join cotacao c
@@ -479,7 +479,7 @@ on p.id = c.fk_pedido_id
 SELECT c.valorunit, p.valorunit, n.valorunit
 
 --UPDATE cotacao
---set valorunit = c.valorunit - (c.valorunit * 0.10)
+--set valorunit = c.valorunit * 0.9
 
 --UPDATE pedido
 --set valorunit = p.valorunit - (p.valorunit * 0.10)
@@ -490,15 +490,13 @@ SELECT c.valorunit, p.valorunit, n.valorunit
 FROM solicitacao s
 inner join cotacao c
 on s.id = c.fk_solicitacao_id
-and c.id >= 1
+and s.id != 3
 
 inner join pedido p
 on p.id = c.fk_pedido_id
 
 inner join nota n
 on n.id = p.fk_nota_id
-
-where s.id != 3
 
 ---------------------- 5 -------------------------
 SELECT p.valortotal
@@ -520,13 +518,9 @@ WHERE year(s.dataemissao) > 2019
 SELECT c.qtde, c.valorunit, c.valortotal, n.qtde, n.valorunit, n.valortotal
 
 --UPDATE cotacao
---set qtde =  n.qtde
-
---UPDATE cotacao
---set valorunit =  n.valorunit
-
---UPDATE cotacao
---set valortotal =  n.valortotal
+--set qtde =  n.qtde,
+--valorunit = n.valorunit, 
+--valortotal= n.valortotal
 
 FROM cotacao c
 
@@ -536,6 +530,4 @@ on c.fk_pedido_id = p.id
 inner join nota n
 on n.id = p.fk_nota_id
 and n.id in (1,3)
-
-
 
