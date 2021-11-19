@@ -531,3 +531,84 @@ inner join nota n
 on n.id = p.fk_nota_id
 and n.id in (1,3)
 
+------------------------- 18/11/21 ----------------------------------
+
+---- Sintaxe para uso do DELETE / DROP no SQL 
+
+-- DELETE - exclui registros da tabela
+-- DROP - exclui estrutura, ou seja, todo conteúdo da tabela
+
+
+1)DELETE cotacao
+2)DELETE solicitacao
+3)DELETE pedido
+4)DELETE nota
+
+SELECT * FROM cotacao
+SELECT * FROM solicitacao
+SELECT * FROM pedido
+SELECT * FROM nota
+
+TRUNCATE TABLE cotacao
+
+DROP TABLE cotacao
+DROP TABLE solicitacao
+DROP TABLE pedido
+DROP TABLE nota
+
+SELECT * FROM solicitacao
+SELECT * FROM cotacao
+
+SELECT * FROM cotacao
+DELETE cotacao
+WHERE id = 3
+
+SELECT * FROM solicitacao
+DELETE solicitacao
+WHERE valor > 1000
+and day(dataemissao) > 8
+and year(dataemissao) = 2021
+
+SELECT * FROM solicitacao
+SELECT * FROM cotacao
+
+DELETE cotacao
+FROM solicitacao s
+inner join cotacao c
+on s.id = c.fk_solicitacao_id
+and len(s.nomeproduto) = 5 
+
+---------------------- 1 -------------------------
+1)DELETE cotacao
+2)DELETE solicitacao
+3)DELETE pedido
+4)DELETE nota
+/*
+Pois cotação possue chaves estrangeiras (FK), então deve-se excluir ela primeiro, 
+depois pode ser excluída solicitacao ou pedido e então a nota 
+*/
+
+---------------------- 2 -------------------------
+DELETE cotacao
+FROM solicitacao s
+inner join cotacao c
+on s.id = c.fk_id_solicitacao_id
+and month(s.dataemissao) > 2 
+and month(s.dataemissao) < 11
+
+inner join pedido p
+on p.id = c.fk_pedido_id
+and p.id not in (1,3)
+
+inner join nota n
+on n.id = p.fk_nota_id
+and n.qtde between 15 and 1684
+
+---------------------- 3 -------------------------
+DELETE nota
+FROM pedido
+inner join nota n
+on n.id = p.fk_nota_id
+WHERE p.valortotal > 200
+
+---------------------- 4 -------------------------
