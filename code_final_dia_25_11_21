@@ -256,7 +256,7 @@ on c.fk_pedido_id = p.id
 inner join nota n
 on n.id = p.fk_nota_id
 
-and day(s.dataemissao) in (04,05,08,09,22,25,26,27)
+WHERE day(s.dataemissao) in (04,05,08,09,22,25,26,27)
 
 -----9-----
 SELECT sum(p.valortotal) as 'Valor Total do Pedido' FROM solicitacao s
@@ -580,19 +580,23 @@ and len(s.nomeproduto) = 5
 
 ---------------------- 1 -------------------------
 1)DELETE cotacao
-2)DELETE solicitacao
-3)DELETE pedido
+2)DELETE pedido
+3)DELETE solicitacao
 4)DELETE nota
 /*
 Pois cotação possue chaves estrangeiras (FK), então deve-se excluir ela primeiro, 
-depois pode ser excluída solicitacao ou pedido e então a nota 
+depois tem que ser excluída a tabela pedido pois ela também possui chave estrangeira (FK), 
+depois exclui-se a tabela solicitação ou a nota que não possuem FK.
+Exclui-se primeiro as tabelas de movimentação (tabelas que possuem FK),
+depois exclui-se as outras tabelas que não possuem FK.
 */
 
 ---------------------- 2 -------------------------
+--SELECT * 
 DELETE cotacao
 FROM solicitacao s
 inner join cotacao c
-on s.id = c.fk_id_solicitacao_id
+on s.id = c.fk_solicitacao_id
 and month(s.dataemissao) > 2 
 and month(s.dataemissao) < 11
 
@@ -604,11 +608,79 @@ inner join nota n
 on n.id = p.fk_nota_id
 and n.qtde between 15 and 1684
 
+
 ---------------------- 3 -------------------------
-DELETE nota
-FROM pedido
+--SELECT *
+DELETE nota 
+FROM pedido p
 inner join nota n
 on n.id = p.fk_nota_id
-WHERE p.valortotal > 200
+and p.valortotal > 200
+
+/* É apresentado erro e não exclui, devido ao fato de que nessa situação para podermos
+excluir os registros da tabela nota, devemos primeiramente excluir os registros da tabela pedido (possue chave estrangeira FK),
+para então deletarmos os registros da tabela nota. */
 
 ---------------------- 4 -------------------------
+--SELECT *
+
+DELETE cotacao
+
+FROM solicitacao s
+inner join cotacao c
+on s.id = c.fk_solicitacao_id
+and s.dataemissao > '20210201'
+
+inner join pedido p
+on p.id = c.fk_pedido_id
+
+inner join nota n
+on n.id = p.fk_nota_id
+and n.valorunit < 7850
+and n.valortotal > 150 
+
+WHERE c.id in (10,12)
+
+------------------------- 25/11/21 ----------------------------------
+
+----- Revisão para a prova -----
+
+-- Conhecer os diagramas conceitual, lógico e físico;
+-- Conhecer a sintaxe, CREATE TABLE (PK e FK), INSERT;
+-- SELECT, UPDATE, DELETE;
+-- Relacionamento da chave primária (PK) com a chave estrangeira (FK);
+-- Sintaxe inner join;
+-- Incluir ou excluir campo ALTER TABLE (ALTER COLUMN, ADD, DROP COLUMN);
+-- Funções utilizadas:
+-- TOP, delimita o número de registros para mostrar na tabela;
+-- SUBSTRING -> Traz uma parte da string;
+-- DAY(), MONTH(), YEAR() and GETDATE();
+-- DATEPART, DATEDIFF and DATEADD;
+-- lower and upper utilizadas com string ou substring;
+-- len, lê o tamanho da string;
+-- count, conta a quantidade de registros;
+-- sum, soma;
+
+---- Exercícios de revisão ----
+
+-- Exercício de Porcentagem --
+
+SELECT * FROM nota
+
+-- Aumentar 10% no valor unitário da tabela nota com UPDATE
+UPDATE nota
+set valorunit = valorunit * 1.1
+
+-- Ou
+
+UPDATE nota
+set valorunit = valorunit + (valorunit * 0.1)
+
+-- Aplicar desconto de 20% no valor total da tabela nota com UPDATE
+UPDATE nota
+set valortotal = valortotal * 0.8
+
+-- Ou
+
+UPDATE nota
+set valortotal = valortotal - (valortotal * 0.2 )
