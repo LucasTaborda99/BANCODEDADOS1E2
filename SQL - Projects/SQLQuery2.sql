@@ -1,11 +1,11 @@
 create database Db_17022022
 use Db_17022022
 
---EXERCÕCIO DE DECLARA«√O DE VARI¡VEL
+--EXERC√çCIO DE DECLARA√á√ÉO DE VARI√ÅVEL
 
--- DECLARANDO VARI¡VEIS EM BANCO DE DADOS
+-- DECLARANDO VARI√ÅVEIS EM BANCO DE DADOS
 CREATE TABLE [Aluno]
-(Matricula Int NOT NULL Identity(1,1) --Contador autom·tico
+(Matricula Int NOT NULL Identity(1,1) --Contador autom√°tico
 ,NomeAluno Varchar(100) NOT NULL
 ,CPF CHAR(11) NOT NULL
 ,DataNcto SMALLDATETIME NOT NULL
@@ -14,39 +14,39 @@ CREATE TABLE [Aluno]
 )
 DROP TABLE Aluno
 
---MANIPULA«√O DE DADOS
---InserÁ„o de dados
-INSERT ALUNO VALUES ('JosÈ da Silva','12345678900','19911121', 2000,'ADS3')
-INSERT ALUNO VALUES ('Maria da Silva', '12345678911','20000317',1000, 'ADS3')
+--MANIPULA√á√ÉO DE DADOS
+--Inser√ß√£o de dados
+INSERT ALUNO VALUES ('Jos√© da Silva','12345678900','19911121', 2000,'ADS3')
+INSERT ALUNO VALUES ('Mario da Silva', '12345678911','20000317',1000, 'ADS3')
 INSERT ALUNO VALUES ('Ana da Silva', '12345678922','20000317', 3000,'ADS1')
 SELECT * FROM Aluno
 TRUNCATE TABLE Aluno
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
-/* CRIA«√O DE VARI¡VEIS LOCAIS */
-DECLARE @TOTAL INT --N⁄MERO DE ALUNOS
+/* CRIA√á√ÉO DE VARI√ÅVEIS LOCAIS */
+DECLARE @TOTAL INT --N√öMERO DE ALUNOS
 DECLARE @VALOR NUMERIC(6,2) --VALOR TOTAL MENSALIDADE
 DECLARE @VALOR_TURMA NUMERIC(6,2) --VALOR TOTAL MENSALIDADE POR TURMA
 DECLARE @TURMA CHAR(5)
 DECLARE @msg varchar(100)
 
-/* DEFINE O VALOR DE CADA VARI¡VEL */
+/* DEFINE O VALOR DE CADA VARI√ÅVEL */
 SET @TURMA = 'ADS3'
 SET @TOTAL = (SELECT COUNT(*) FROM Aluno)
 SET @VALOR = (SELECT SUM(MENSALIDADE) FROM Aluno)
 SET @VALOR_TURMA = (SELECT SUM(MENSALIDADE) FROM Aluno WHERE TURMA=@TURMA)
 
-/* IMPRIMINDO O VALOR DAS VARI¡VEIS */
+/* IMPRIMINDO O VALOR DAS VARI√ÅVEIS */
 PRINT(@TOTAL)
 PRINT('TOTAL de Alunos ' + CONVERT(CHAR(10),@TOTAL))
 PRINT('')
 PRINT('MENSALIDADE TURMA ' + @TURMA)
 PRINT('VALOR R$ ' + CONVERT(CHAR(10),@VALOR_TURMA))
 
-/* VERIFICA«√O DO VALOR DA MENSALIDADE */
+/* VERIFICA√á√ÉO DO VALOR DA MENSALIDADE */
 PRINT('')
-PRINT('IF - DECIS√O')
+PRINT('IF - DECIS√ÉO')
 IF @VALOR > 1000
 BEGIN
 SET @msg = 'Valor Total das Mensalidades maior que 1000' --Mostrar o valor
@@ -58,7 +58,7 @@ SET @msg = 'Valor Total das Mensalidades menor que 1000' --Mostrar o valor
 PRINT(@msg)
 END
 PRINT('')
-PRINT('WHILE - REPETI«√O')
+PRINT('WHILE - REPETI√á√ÉO')
 WHILE @VALOR > 1000
 BEGIN
 PRINT(@VALOR) ---Descrever/mostrar melhor
@@ -79,7 +79,7 @@ END
 BREAK
 END
 --------------------------------------------------
---Case COM opÁıes
+--Case COM op√ß√µes
 declare @user varchar(10), @user_ver varchar(10), @status varchar(10)
 set @user = 'p'
 set @user_ver = 'CLAUDIA1'
@@ -91,22 +91,22 @@ WHEN
 @user = 'NULO'
 OR @user_ver = ''
 THEN
-'Usuario n„o Verificado'
+'Usuario n√£o Verificado'
 WHEN
 @user = 'P'
 THEN
-'Usuario Pendente de ValidaÁ„o'
+'Usuario Pendente de Valida√ß√£o'
 WHEN
 @user != '2020'
 THEN
-'Usu·rio MENOR Igual a 2020'
+'Usu√°rio MENOR Igual a 2020'
 WHEN
 (@user = 'X' AND @user_ver = '2010')
 OR (SELECT @status ) = 'BLOQUEADO'
 THEN
 'Usuario Pioneiro BLOQUEADO'
 ELSE
-'N„o parametrizado'
+'N√£o parametrizado'
 END as verificacaoxxxxx
 ---------------------------------------------
 --Aluno nota
@@ -118,8 +118,8 @@ SELECT @aluno as 'Aluno',
 CASE
 when @nota < 5 then 'Reprovado'
 when @nota > 6 then 'Aprovado'
-Else 'Em RecuperaÁ„o'
-end as 'SituaÁ„o'
+Else 'Em Recupera√ß√£o'
+end as 'Situa√ß√£o'
 ---------------------------------------------
 declare @estado varchar(10),@sigla varchar(02)
 set @estado ='SAO PAULO'
@@ -189,47 +189,47 @@ END
 SET @Contador = (@Contador + 1)
 END
 ---------------------------------------------------------------------------------------------------------------------------------------------------
---EXERCÕCIOS DE DECLARA«√O DE VARI¡VEIS
+--EXERC√çCIOS DE DECLARA√á√ÉO DE VARI√ÅVEIS
 
---1) Verificar se o n˙mero de alunos de uma turma È maior que 5.
+--1) Verificar se o n√∫mero de alunos de uma turma √© maior que 5.
 
-/*CRIA«√O DE VARI¡VEIS LOCAIS*/
-DECLARE @TOTAL INT -- N⁄MERO DE ALUNOS
+/*CRIA√á√ÉO DE VARI√ÅVEIS LOCAIS*/
+DECLARE @TOTAL INT -- N√öMERO DE ALUNOS
 DECLARE @TURMA CHAR(5) 
 DECLARE @msg VARCHAR(150)
 
-/*DEFININDO O VALOR DE CADA VARI¡VEL*/
+/*DEFININDO O VALOR DE CADA VARI√ÅVEL*/
 SET @TURMA = 'ADS3'
 SET @TOTAL = (SELECT COUNT(*) FROM Aluno WHERE Turma = @TURMA)
 
 IF @TOTAL > 5
 	BEGIN
-	SET @msg = 'A quantidade de alunos da turma de ADS3 È maior que 5, a quantidade de alunos dessa turma È igual a: ' + CONVERT(CHAR(10), @TOTAL)
+	SET @msg = 'A quantidade de alunos da turma de ADS3 √© maior que 5, a quantidade de alunos dessa turma √© igual a: ' + CONVERT(CHAR(10), @TOTAL)
 	PRINT(@msg)
 END
 ELSE
 BEGIN
-	SET @msg = 'A quantidade de alunos da turma de ADS3 È menor que 5, a quantidade de alunos dessa turma È igual a: ' + CONVERT(CHAR(10), @TOTAL)
+	SET @msg = 'A quantidade de alunos da turma de ADS3 √© menor que 5, a quantidade de alunos dessa turma √© igual a: ' + CONVERT(CHAR(10), @TOTAL)
 	PRINT(@msg)
 END 
 
 /*
--- Ou pode-se utilizar tambÈm o operador tern·rio
+-- Ou pode-se utilizar tamb√©m o operador tern√°rio
 SELECT IIF (@TOTAL > 5, 
-'A quantidade de alunos da turma de ADS3 È maior que 5, a quantidade de alunos dessa turma È igual a: ' + CONVERT(CHAR(10), @TOTAL),
-'A quantidade de alunos da turma de ADS3 È menor que 5, a quantidade de alunos dessa turma È igual a: ' + CONVERT(CHAR(10), @TOTAL)) as 'Quantidade de alunos'
+'A quantidade de alunos da turma de ADS3 √© maior que 5, a quantidade de alunos dessa turma √© igual a: ' + CONVERT(CHAR(10), @TOTAL),
+'A quantidade de alunos da turma de ADS3 √© menor que 5, a quantidade de alunos dessa turma √© igual a: ' + CONVERT(CHAR(10), @TOTAL)) as 'Quantidade de alunos'
 */
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-/* 2) Usar declaraÁ„o de vari·veis para mostrar um desconto de 10% para mensalidade
+/* 2) Usar declara√ß√£o de vari√°veis para mostrar um desconto de 10% para mensalidade
 maior que 1000, e para menores desconto de 5% a um determinado aluno apenas.*/
 
-/*CRIA«√O DE VARI¡VEIS LOCAIS*/
+/*CRIA√á√ÉO DE VARI√ÅVEIS LOCAIS*/
 DECLARE @MENSALIDADE NUMERIC(6,2)
 DECLARE @MENSALIDADE1 NUMERIC(6,2)
 DECLARE @NOME VARCHAR(50)
 
-/*DEFININDO O VALOR DE CADA VARI¡VEL*/
+/*DEFININDO O VALOR DE CADA VARI√ÅVEL*/
 SET @MENSALIDADE = (SELECT Mensalidade FROM Aluno WHERE Matricula = 2 and Turma = 'ADS3')
 SET @MENSALIDADE1 = @MENSALIDADE
 SET @NOME = (SELECT NomeAluno FROM Aluno WHERE Matricula = 2  and Turma = 'ADS3')
@@ -237,11 +237,94 @@ SET @NOME = (SELECT NomeAluno FROM Aluno WHERE Matricula = 2  and Turma = 'ADS3'
 IF @MENSALIDADE > 1000
 	BEGIN
 	SET @MENSALIDADE = @MENSALIDADE - (@MENSALIDADE * 0.1)
-	PRINT 'Mensalidade de ' + CONVERT(CHAR(7), @MENSALIDADE1) + 'R$ ' + 'do aluno(a) ' + @NOME + ' com aplicaÁ„o de desconto de 10% => ' + 'Mensalidade atual no valor de ' + CONVERT(CHAR(7), @MENSALIDADE) + 'R$'
+	PRINT 'Mensalidade de ' + CONVERT(CHAR(7), @MENSALIDADE1) + 'R$ ' + 'do aluno(a) ' + @NOME + ' com aplica√ß√£o de desconto de 10% => ' + 'Mensalidade atual no valor de ' + CONVERT(CHAR(7), @MENSALIDADE) + 'R$'
 END
 ELSE
 	BEGIN
 	SET @MENSALIDADE = @MENSALIDADE - (@MENSALIDADE * 0.05)
-	PRINT 'Mensalidade de ' + CONVERT(CHAR(7), @MENSALIDADE1) + 'R$' + 'do Aluno(a) ' + @NOME + ' com aplicaÁ„o de desconto de 5% => ' + 'Mensalidade atual no valor de ' + CONVERT(CHAR(7), @MENSALIDADE) + 'R$'
+	PRINT 'Mensalidade de ' + CONVERT(CHAR(7), @MENSALIDADE1) + 'R$ ' + 'do Aluno(a) ' + @NOME + ' com aplica√ß√£o de desconto de 5% => ' + 'Mensalidade atual no valor de ' + CONVERT(CHAR(7), @MENSALIDADE) + 'R$'
 END 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/* 1) Desenvolva um script em SQL que mostre um contador at√© 100 e pare no n√∫mero 62
+mostrando o n√∫mero como resultado. */
+
+DECLARE @NUM INT 
+
+SET @NUM = 1
+
+WHILE @NUM <= 100
+	BEGIN
+		SELECT @NUM as N√∫mero
+		IF @NUM < 62
+			BEGIN
+				SET @NUM = @NUM + 1
+				CONTINUE
+			END
+			SELECT @NUM as Resultado
+		BREAK
+	END
+-------------------------------------------------------------------------
+/* 2) Crie um script em P/SQL que mostre os n√∫mero de 1 at√© 100 e mostre se o n√∫mero √©
+par ou impar. */
+
+DECLARE @NUM INT 
+
+SET @NUM = 1
+
+WHILE @NUM <= 100
+	BEGIN
+		SELECT @NUM as N√∫meros,
+		CASE 
+			WHEN @NUM % 2 = 0 THEN 'Par' ELSE '√çmpar'
+		END 'Par ou √çmpar'
+		SET @NUM += 1
+	END
+---------------------------------------------------------------------------------
+/* 3) Desenvolve um script em PL/SQL que apresente o resultado da vari√°vel idade se:
+Condi√ß√£o Resultado
+Menor que 10 Crian√ßa
+De 10 at√© 17 Jovem
+De 18 at√© 60 Adulto
+Acima de 61 Idoso */
+
+DECLARE @IDADE INT
+SET @IDADE = 65
+
+SELECT @IDADE as Idade,
+	CASE 
+		WHEN @IDADE < 10 THEN 'Crian√ßa'
+		WHEN @IDADE BETWEEN 10 AND 17 THEN 'Jovem'
+		WHEN @IDADE BETWEEN 18 AND 60 THEN 'Adulto'
+		ELSE 'Idoso'
+	END as 'Categoria'
+
+-------------------------------------------------------------------------
+/* 4) Mostrar se o aluno mario da silva est√° cadastrado na tabela e calcular aumento na
+mensalidade de 10% e apresentar como jovem se idade menor que 60 sen√£o idoso */
+
+DECLARE @ALUNO VARCHAR (100)
+DECLARE @MENSALI NUMERIC (6,2)
+DECLARE @MENSALI1 NUMERIC (6,2)
+DECLARE @IDADE INT
+
+SET @ALUNO = (SELECT NomeAluno FROM Aluno WHERE NomeAluno = 'Mario da Silva')
+SET @MENSALI = (SELECT Mensalidade FROM Aluno WHERE NomeAluno = @ALUNO)
+SET @MENSALI1 = @MENSALI
+SET @IDADE = (SELECT YEAR(GETDATE()) - YEAR(DataNcto) FROM Aluno WHERE NomeAluno = @ALUNO)
+PRINT @IDADE
+
+SELECT @ALUNO as Aluno
+
+		SET @MENSALI = @MENSALI + (@MENSALI * 0.1)
+		PRINT 'Mensalidade de ' + CONVERT(CHAR(7), @MENSALI) --'R$ do aluno(a) ' + @ALUNO + ' com aplica√ß√£o de aumento de 10% => Mensalidade atual no valor de ' + CONVERT(CHAR(7), @MENSALI) + 'R$'
+
+	SELECT @IDADE AS IDADE,
+	CASE 
+		WHEN @IDADE < 60 THEN 'Jovem' ELSE 'Idoso'
+	END as Categoria
+			
+
+
+
+-- SET @MENSALIDADE = (SELECT Mensalidade FROM Aluno WHERE Matricula = 2 and Turma = 'ADS3')
+
