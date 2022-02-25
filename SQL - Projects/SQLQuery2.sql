@@ -17,7 +17,7 @@ DROP TABLE Aluno
 --MANIPULAÇÃO DE DADOS
 --Inserção de dados
 INSERT ALUNO VALUES ('José da Silva','12345678900','19911121', 2000,'ADS3')
-INSERT ALUNO VALUES ('Mario da Silva', '12345678911','20000317',1000, 'ADS3')
+INSERT ALUNO VALUES ('Mario da Silva', '12345678911','19990324',1000, 'ADS3')
 INSERT ALUNO VALUES ('Ana da Silva', '12345678922','20000317', 3000,'ADS1')
 SELECT * FROM Aluno
 TRUNCATE TABLE Aluno
@@ -297,34 +297,231 @@ SELECT @IDADE as Idade,
 		WHEN @IDADE BETWEEN 18 AND 60 THEN 'Adulto'
 		ELSE 'Idoso'
 	END as 'Categoria'
-
 -------------------------------------------------------------------------
 /* 4) Mostrar se o aluno mario da silva está cadastrado na tabela e calcular aumento na
 mensalidade de 10% e apresentar como jovem se idade menor que 60 senão idoso */
 
 DECLARE @ALUNO VARCHAR (100)
 DECLARE @MENSALI NUMERIC (6,2)
-DECLARE @MENSALI1 NUMERIC (6,2)
 DECLARE @IDADE INT
 
 SET @ALUNO = (SELECT NomeAluno FROM Aluno WHERE NomeAluno = 'Mario da Silva')
 SET @MENSALI = (SELECT Mensalidade FROM Aluno WHERE NomeAluno = @ALUNO)
-SET @MENSALI1 = @MENSALI
-SET @IDADE = (SELECT YEAR(GETDATE()) - YEAR(DataNcto) FROM Aluno WHERE NomeAluno = @ALUNO)
-PRINT @IDADE
+SET @IDADE = (SELECT  --DATEDIFF(YEAR, DataNcto, GETDATE()) FROM Aluno WHERE NomeAluno = @ALUNO) ou YEAR(GETDATE()) - YEAR(DataNcto) ...
+CASE 
+	WHEN
+		DATEPART(MONTH,	DataNcto) <= DATEPART(MONTH, GETDATE()) AND DATEPART(DAY, DataNcto) <= DATEPART(DAY, GETDATE())
+			THEN (DATEDIFF(YEAR, DataNcto, GETDATE())) 
+				ELSE (DATEDIFF(YEAR, DataNcto, GETDATE())) - 1 
+END 
+FROM Aluno WHERE NomeAluno = @ALUNO )
 
 SELECT @ALUNO as Aluno
 
-		SET @MENSALI = @MENSALI + (@MENSALI * 0.1)
-		PRINT 'Mensalidade de ' + CONVERT(CHAR(7), @MENSALI) --'R$ do aluno(a) ' + @ALUNO + ' com aplicação de aumento de 10% => Mensalidade atual no valor de ' + CONVERT(CHAR(7), @MENSALI) + 'R$'
+SET @MENSALI = @MENSALI + (@MENSALI * 0.1)
+SELECT @MENSALI as Mensalidade
 
-	SELECT @IDADE AS IDADE,
-	CASE 
-		WHEN @IDADE < 60 THEN 'Jovem' ELSE 'Idoso'
-	END as Categoria
+SELECT @IDADE AS Idade,
+CASE 
+	WHEN @IDADE < 60 THEN 'Jovem' ELSE 'Idoso'
+END as Categoria
+-------------------------------------------------------------------------
+/* 1) Desenvolva um script em SQL que mostre um contador até 100 e pare no número 62
+mostrando o número como resultado. */
+
+DECLARE @NUM INT
+SET @NUM = 1
+
+WHILE @NUM <= 100
+	BEGIN
+		IF @NUM <= 62
+			BEGIN
+				SELECT @NUM as Número
+				SET @NUM += 1
+				CONTINUE
+			END
+	BREAK
+	END
+
+/* Ou
+DECLARE @NUM INT 
+
+SET @NUM = 1
+
+WHILE @NUM <= 100
+	BEGIN
+		SELECT @NUM as Número
+		IF @NUM < 62
+			BEGIN
+				SET @NUM = @NUM + 1
+				CONTINUE
+			END
+			SELECT @NUM as Resultado
+		BREAK
+	END
+*/
+
+-------------------------------------------------------------------------
+/* 2) Elabore um script em SQL que apresente um contador até 1000 e mostre a soma dos
+números multiplicados por 3 e multiplicados por 5 e no final mostrar a soma de cada um deles. */
+
+DECLARE @NUM INT
+DECLARE @SOMA INT 
+
+SET @NUM = 1
+SET @SOMA = 0
+
+WHILE @NUM <= 100
+	BEGIN
+		IF @NUM % 3 = 0 AND @NUM % 5 = 0
+			BEGIN
+			SELECT @NUM as Número
+				SET @SOMA = @NUM + @NUM
+				SELECT @SOMA AS 'Resultado da Soma'
+				SET @NUM += 1 
+				CONTINUE
+			END
+		SET @NUM += 1
+		CONTINUE
+	END
+-------------------------------------------------------------------------
+/* 3) Crie um script em PL/SQL que mostre os números de 1 até 100 e mostre se o número é par
+ou impar. */
+
+DECLARE @NUM INT
+
+SET @NUM = 1
+
+WHILE @NUM <= 100
+	BEGIN
+		SELECT @NUM as Número,
+			CASE
+				WHEN @NUM % 2 = 0 THEN 'PAR' ELSE 'ÍMPAR'
+			END as 'Par ou Ímpar'
+		SET @NUM += 1
+		CONTINUE
+	END
+-------------------------------------------------------------------------
+/* 4) Desenvolva um script em PL/SQL que apresente o resultado da variável idade será formada
+pela data atual, ou seja, dia + mês + 21 do ano igual a 4 + 3 + 21 e mostrar como resultado:
+
+Se Menor que 10 igual a Criança
+De 10 até 17 igual a Jovem
+De 18 até 60 igual a Adulto
+Acima de 61 Idoso */
+
+DECLARE @IDADE INT
+DECLARE @DATAATUAL SMALLDATETIME
+
+SET @DATAATUAL = '20210304'
+SET @IDADE = (DATEDIFF(YEAR ,@DATAATUAL, GETDATE()))
+
+SELECT @IDADE as 'Idade',
+CASE
+	WHEN @IDADE < 10 THEN 'Criança'
+	WHEN @IDADE BETWEEN 10 AND 17 THEN 'Jovem'
+	WHEN @IDADE BETWEEN 18 AND 60 THEN 'Adulto'
+	ELSE 'Idoso'
+END as 'Categoria'
+-------------------------------------------------------------------------
+/* 5) Mostrar em PL/SQL se o aluno Mário da silva está contido em uma variável, bem como seu
+salário e calcular aumento de 10% para ele e mostre o nome em letras maiúsculas. */
+
+DECLARE @ALUNO VARCHAR(50)
+DECLARE @SALARIO NUMERIC(12,2)
+
+SET @ALUNO = 'Mário da Silva'
+SET @SALARIO = 2000.00
+
+SELECT UPPER(@ALUNO) as 'Nome do Aluno'
+
+SELECT @SALARIO as 'Salário atual'
+
+IF @ALUNO = 'Mário da Silva'
+	BEGIN
+	SET @SALARIO = @SALARIO + (@SALARIO * 0.1)
+	SELECT @SALARIO as 'Salário com acréscimo de 10%'
+END
+-------------------------------------------------------------------------
+/* 6) Elabore um laço de repetição usando PL/SQL que use While e quando o valor for 8 pare e
+finalize o programa. */
+
+DECLARE @NUM INT
+
+SET @NUM = 1
+
+WHILE @NUM <= 8 
+	BEGIN
+		SELECT @NUM as 'Número'
+		SET @NUM += 1
+	END
+-------------------------------------------------------------------------
+/* 7) Desenvolva um script em PL/SQL que use duas variáveis e verifique se a media for acima de
+6 o aluno está aprovado senão reprovado. */
+
+DECLARE @NOTA1 NUMERIC(12,2)
+DECLARE @NOTA2 NUMERIC(12,2)
+DECLARE @MEDIA NUMERIC(12,2)
+
+SET @NOTA1 = 10.00
+SET @NOTA2 = 6.00
+SET @MEDIA = (@NOTA1 + @NOTA2) / 2
+
+SELECT @MEDIA as 'Média',
+CASE
+	WHEN @MEDIA > 6 THEN 'Aprovado' ELSE 'Reprovado'
+END as 'Situação'
+-------------------------------------------------------------------------
+/* 8) Elabore um script em PL/SQL que verifique os números de 1 até 100 e mostre a quantidade
+de pares e impares no final, bem como a soma de todos os pares e também a soma dos
+impares. */
+
+DECLARE @NUMERO INT
+DECLARE @CONTAGEMPAR INT
+DECLARE @CONTAGEMIMPAR INT
+
+SET @NUMERO = 1
+SET @CONTAGEMPAR = 0
+SET @CONTAGEMIMPAR = 0
+
+WHILE @NUMERO <= 100
+	BEGIN
+		IF @NUMERO % 2 = 0
+			BEGIN
+				SET @CONTAGEMPAR = @CONTAGEMPAR + 1
+				SET @NUMERO += 1
+				SELECT @CONTAGEMPAR as 'Contagem Par'
+			END
 			
+		ELSE
+			BEGIN
+				SET @CONTAGEMIMPAR += 1
+				SET @NUMERO += 1
+				SELECT @CONTAGEMIMPAR as 'Contagem Impar'
+			END
+		CONTINUE
+	END
+-------------------------------------------------------------------------
+/* 9) Crie um script em PL/SQL usando CASE que mostre um laço de repetição de 1 até 5000 e
+apresente a seguinte mensagem:
+Se número entre 1000 e 2000 analista júnior
+Se número entre 2500 e 4000 analista pleno
+Senão analista sênior */
 
+DECLARE @NUMBER INT
 
+SET @NUMBER = 1
 
--- SET @MENSALIDADE = (SELECT Mensalidade FROM Aluno WHERE Matricula = 2 and Turma = 'ADS3')
-
+WHILE @NUMBER <= 5000
+	BEGIN
+		SELECT @NUMBER as 'Número',
+			CASE
+				WHEN @NUMBER < 500 THEN 'Estagiário'
+				WHEN @NUMBER BETWEEN 500 AND 999 THEN 'Trainee'
+				WHEN @NUMBER BETWEEN 1000 AND 2000 THEN 'Analista Júnior'
+				WHEN @NUMBER BETWEEN 2500 AND 4000 THEN 'Analista Pleno'
+				ELSE 'Analista Sênior'
+			END as 'Categoria'
+		SET @NUMBER += 1
+	END
+			
