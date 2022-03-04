@@ -373,15 +373,15 @@ SET @SOMA3 = 0
 SET @SOMA5 = 0
 SET @SOMADOSDOIS = 0
 
-WHILE @NUM <= 100
+WHILE @NUM <= 12
 	BEGIN
 		IF @NUM % 3 = 0 
 			BEGIN
-				SET @SOMA3 = @NUM + @NUM
+				SET @SOMA3 += 1
 			END
 		ELSE IF @NUM % 5 = 0
 			BEGIN
-			SET @SOMA5 = @NUM + @NUM
+			SET @SOMA5 += 1
 		END
 		SET @NUM += 1
 	END
