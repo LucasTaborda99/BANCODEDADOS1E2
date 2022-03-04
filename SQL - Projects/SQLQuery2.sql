@@ -328,7 +328,6 @@ END as Categoria
 -------------------------------------------------------------------------
 /* 1) Desenvolva um script em SQL que mostre um contador até 100 e pare no número 62
 mostrando o número como resultado. */
-
 DECLARE @NUM INT
 SET @NUM = 1
 
@@ -336,11 +335,11 @@ WHILE @NUM <= 100
 	BEGIN
 		IF @NUM <= 62
 			BEGIN
-				SELECT @NUM as Número
+				SELECT @NUM AS 'Número'
 				SET @NUM += 1
 				CONTINUE
 			END
-	BREAK
+		BREAK
 	END
 
 /* Ou
@@ -360,168 +359,159 @@ WHILE @NUM <= 100
 		BREAK
 	END
 */
-
--------------------------------------------------------------------------
-/* 2) Elabore um script em SQL que apresente um contador até 1000 e mostre a soma dos
-números multiplicados por 3 e multiplicados por 5 e no final mostrar a soma de cada um deles. */
+---------------------------------------------------------------------------------------------
+/*	2) Elabore um script em SQL que apresente um contador até 1000 e mostre a soma dos
+números multiplicados por 3 e multiplicados por 5 e no final mostrar a soma de cada um deles */
 
 DECLARE @NUM INT
-DECLARE @SOMA INT 
+DECLARE @SOMA3 INT
+DECLARE @SOMA5 INT
+DECLARE @SOMADOSDOIS INT
 
 SET @NUM = 1
-SET @SOMA = 0
+SET @SOMA3 = 0
+SET @SOMA5 = 0
+SET @SOMADOSDOIS = 0
 
 WHILE @NUM <= 100
 	BEGIN
-		IF @NUM % 3 = 0 AND @NUM % 5 = 0
+		IF @NUM % 3 = 0 
 			BEGIN
-			SELECT @NUM as Número
-				SET @SOMA = @NUM + @NUM
-				SELECT @SOMA AS 'Resultado da Soma'
-				SET @NUM += 1 
-				CONTINUE
+				SET @SOMA3 = @NUM + @NUM
 			END
+		ELSE IF @NUM % 5 = 0
+			BEGIN
+			SET @SOMA5 = @NUM + @NUM
+		END
 		SET @NUM += 1
-		CONTINUE
 	END
--------------------------------------------------------------------------
+	SELECT @SOMA3 AS 'Soma dos números multiplicados por 3'
+	SELECT @SOMA5 AS 'Soma dos números multiplicados por 5'
+
+	SET @SOMADOSDOIS = (@SOMA3 + @SOMA5)
+	SELECT @SOMADOSDOIS AS 'Soma dos dois'
+---------------------------------------------------------------------------------------------
 /* 3) Crie um script em PL/SQL que mostre os números de 1 até 100 e mostre se o número é par
 ou impar. */
 
 DECLARE @NUM INT
-
 SET @NUM = 1
 
 WHILE @NUM <= 100
 	BEGIN
-		SELECT @NUM as Número,
+		SELECT @NUM as 'Número',
 			CASE
-				WHEN @NUM % 2 = 0 THEN 'PAR' ELSE 'ÍMPAR'
-			END as 'Par ou Ímpar'
+				WHEN @NUM % 2 = 0 THEN 'PAR' 
+				ELSE 'ÍMPAR'
+			END AS 'Par ou Ímpar'
 		SET @NUM += 1
-		CONTINUE
 	END
--------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
 /* 4) Desenvolva um script em PL/SQL que apresente o resultado da variável idade será formada
 pela data atual, ou seja, dia + mês + 21 do ano igual a 4 + 3 + 21 e mostrar como resultado:
 
 Se Menor que 10 igual a Criança
 De 10 até 17 igual a Jovem
 De 18 até 60 igual a Adulto
-Acima de 61 Idoso */
+Acima de 61 Idoso  */
 
 DECLARE @IDADE INT
-DECLARE @DATAATUAL SMALLDATETIME
-
-SET @DATAATUAL = '20210304'
-SET @IDADE = (DATEDIFF(YEAR ,@DATAATUAL, GETDATE()))
-
+SET @IDADE = DATEDIFF(YEAR,'19991009',GETDATE())
 SELECT @IDADE as 'Idade',
 CASE
 	WHEN @IDADE < 10 THEN 'Criança'
-	WHEN @IDADE BETWEEN 10 AND 17 THEN 'Jovem'
-	WHEN @IDADE BETWEEN 18 AND 60 THEN 'Adulto'
+	WHEN @IDADE between 10 and 17 THEN 'Jovem'
+	WHEN @IDADE between 18 and 60 THEN 'Adulto'
 	ELSE 'Idoso'
 END as 'Categoria'
--------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
 /* 5) Mostrar em PL/SQL se o aluno Mário da silva está contido em uma variável, bem como seu
-salário e calcular aumento de 10% para ele e mostre o nome em letras maiúsculas. */
+salário e calcular aumento de 10% para ele e mostre o nome em letras maiúsculas.  */
+DECLARE @NOME VARCHAR (100)
+DECLARE @SALARIO NUMERIC(6,2)
 
-DECLARE @ALUNO VARCHAR(50)
-DECLARE @SALARIO NUMERIC(12,2)
+SET @NOME = (SELECT NomeAluno FROM Aluno WHERE NomeAluno = 'Mario da Silva')
+SET @SALARIO = 1000.00
 
-SET @ALUNO = 'Mário da Silva'
-SET @SALARIO = 2000.00
-
-SELECT UPPER(@ALUNO) as 'Nome do Aluno'
-
-SELECT @SALARIO as 'Salário atual'
-
-IF @ALUNO = 'Mário da Silva'
+IF @NOME = 'Mario da Silva'
 	BEGIN
-	SET @SALARIO = @SALARIO + (@SALARIO * 0.1)
-	SELECT @SALARIO as 'Salário com acréscimo de 10%'
-END
--------------------------------------------------------------------------
+		SET @SALARIO = @SALARIO + (@SALARIO * 0.1)
+	END
+
+SELECT @SALARIO as 'Salário', UPPER(@NOME) AS 'Nome do aluno'
+---------------------------------------------------------------------------------------------
 /* 6) Elabore um laço de repetição usando PL/SQL que use While e quando o valor for 8 pare e
 finalize o programa. */
-
 DECLARE @NUM INT
 
 SET @NUM = 1
 
-WHILE @NUM <= 8 
+WHILE @NUM <= 8
 	BEGIN
-		SELECT @NUM as 'Número'
+		SELECT @NUM AS 'Número'
 		SET @NUM += 1
+		CONTINUE
 	END
--------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
 /* 7) Desenvolva um script em PL/SQL que use duas variáveis e verifique se a media for acima de
 6 o aluno está aprovado senão reprovado. */
+DECLARE @NOTA1 NUMERIC (6,2)
+DECLARE @NOTA2 NUMERIC (6,2)
 
-DECLARE @NOTA1 NUMERIC(12,2)
-DECLARE @NOTA2 NUMERIC(12,2)
-DECLARE @MEDIA NUMERIC(12,2)
+SET @NOTA1 = 8.0
+SET @NOTA2 = 6.0
 
-SET @NOTA1 = 10.00
-SET @NOTA2 = 6.00
-SET @MEDIA = (@NOTA1 + @NOTA2) / 2
-
-SELECT @MEDIA as 'Média',
+SELECT (@NOTA1 + @NOTA2) / 2 AS 'Média',
 CASE
-	WHEN @MEDIA > 6 THEN 'Aprovado' ELSE 'Reprovado'
-END as 'Situação'
--------------------------------------------------------------------------
+	WHEN (@NOTA1 + @NOTA2) / 2 > 6.0 THEN 'Aluno aprovado' ELSE 'Aluno reprovado'
+END AS 'Situação do aluno'
+---------------------------------------------------------------------------------------------
 /* 8) Elabore um script em PL/SQL que verifique os números de 1 até 100 e mostre a quantidade
 de pares e impares no final, bem como a soma de todos os pares e também a soma dos
 impares. */
 
-DECLARE @NUMERO INT
-DECLARE @CONTAGEMPAR INT
-DECLARE @CONTAGEMIMPAR INT
+DECLARE @NUM INT
+DECLARE @QUANTIDADEPARES INT
+DECLARE @QUANTIDADEIMPARES INT
+DECLARE @SOMAPARESEIMPARES INT
 
-SET @NUMERO = 1
-SET @CONTAGEMPAR = 0
-SET @CONTAGEMIMPAR = 0
+SET @NUM = 1
+SET @QUANTIDADEPARES = 0
+SET @QUANTIDADEIMPARES = 0
+SET @SOMAPARESEIMPARES = 0
 
-WHILE @NUMERO <= 100
+WHILE @NUM <= 100
 	BEGIN
-		IF @NUMERO % 2 = 0
+		IF @NUM % 2 = 0
 			BEGIN
-				SET @CONTAGEMPAR = @CONTAGEMPAR + 1
-				SET @NUMERO += 1
-				SELECT @CONTAGEMPAR as 'Contagem Par'
-			END
-			
+			SET @QUANTIDADEPARES += 1
+		END
 		ELSE
 			BEGIN
-				SET @CONTAGEMIMPAR += 1
-				SET @NUMERO += 1
-				SELECT @CONTAGEMIMPAR as 'Contagem Impar'
-			END
-		CONTINUE
+			SET @QUANTIDADEIMPARES += 1
+		END
+		SET @NUM += 1
 	END
--------------------------------------------------------------------------
+	SET @SOMAPARESEIMPARES = @QUANTIDADEPARES + @QUANTIDADEIMPARES
+	SELECT @QUANTIDADEPARES AS 'Quantidade de Números Pares', @QUANTIDADEIMPARES AS 'Quantidade de Números Ímpares', @SOMAPARESEIMPARES AS 'Soma dos pares e ímpares'
+---------------------------------------------------------------------------------------------
 /* 9) Crie um script em PL/SQL usando CASE que mostre um laço de repetição de 1 até 5000 e
 apresente a seguinte mensagem:
 Se número entre 1000 e 2000 analista júnior
 Se número entre 2500 e 4000 analista pleno
 Senão analista sênior */
 
-DECLARE @NUMBER INT
+DECLARE @NUM INT
 
-SET @NUMBER = 1
+SET @NUM = 1
 
-WHILE @NUMBER <= 5000
+WHILE @NUM <= 5000
 	BEGIN
-		SELECT @NUMBER as 'Número',
-			CASE
-				WHEN @NUMBER < 500 THEN 'Estagiário'
-				WHEN @NUMBER BETWEEN 500 AND 999 THEN 'Trainee'
-				WHEN @NUMBER BETWEEN 1000 AND 2000 THEN 'Analista Júnior'
-				WHEN @NUMBER BETWEEN 2500 AND 4000 THEN 'Analista Pleno'
-				ELSE 'Analista Sênior'
-			END as 'Categoria'
-		SET @NUMBER += 1
+		SELECT @NUM as 'Número',
+		CASE
+			WHEN @NUM BETWEEN 1000 AND 2000 THEN 'Analista Júnior'
+			WHEN @NUM BETWEEN 2500 AND 4000 THEN 'Analista Pleno'
+			ELSE 'Analista Sênior'
+		END as 'Categoria'
+		SET @NUM +=1
 	END
-			
