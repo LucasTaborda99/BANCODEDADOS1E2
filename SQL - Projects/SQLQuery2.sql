@@ -366,27 +366,36 @@ números multiplicados por 3 e multiplicados por 5 e no final mostrar a soma de 
 DECLARE @NUM INT
 DECLARE @SOMA3 INT
 DECLARE @SOMA5 INT
+DECLARE @QTDE3 INT
+DECLARE @QTDE5 INT
 DECLARE @SOMADOSDOIS INT
 
 SET @NUM = 1
 SET @SOMA3 = 0
 SET @SOMA5 = 0
 SET @SOMADOSDOIS = 0
+SET @QTDE3 = 0
+SET @QTDE5 = 0
 
-WHILE @NUM <= 12
+WHILE @NUM <= 1000
 	BEGIN
 		IF @NUM % 3 = 0 
 			BEGIN
-				SET @SOMA3 += 1
+				SET @SOMA3 += @NUM
+				SET @QTDE3 += 1
 			END
-		ELSE IF @NUM % 5 = 0
+		IF @NUM % 5 = 0
 			BEGIN
-			SET @SOMA5 += 1
+			SET @SOMA5 += @NUM
+			SET @QTDE5 += 1
 		END
 		SET @NUM += 1
 	END
 	SELECT @SOMA3 AS 'Soma dos números multiplicados por 3'
 	SELECT @SOMA5 AS 'Soma dos números multiplicados por 5'
+
+	SELECT @QTDE3 AS 'QTDE 3'
+	SELECT @QTDE5 AS 'QTDE 5'
 
 	SET @SOMADOSDOIS = (@SOMA3 + @SOMA5)
 	SELECT @SOMADOSDOIS AS 'Soma dos dois'
@@ -416,7 +425,8 @@ De 18 até 60 igual a Adulto
 Acima de 61 Idoso  */
 
 DECLARE @IDADE INT
-SET @IDADE = DATEDIFF(YEAR,'19991009',GETDATE())
+SET @IDADE = DAY(GETDATE()) + MONTH(GETDATE()) + CONVERT (INT, SUBSTRING(CONVERT(CHAR(4), YEAR(GETDATE())),3,2))
+
 SELECT @IDADE as 'Idade',
 CASE
 	WHEN @IDADE < 10 THEN 'Criança'
@@ -435,10 +445,12 @@ SET @SALARIO = 1000.00
 
 IF @NOME = 'Mario da Silva'
 	BEGIN
-		SET @SALARIO = @SALARIO + (@SALARIO * 0.1)
+		SET @SALARIO += (@SALARIO * 0.1)
+		SELECT 'Salário com 10% => R$' + CONVERT(CHAR(10), @SALARIO) AS 'Salário'
+		SELECT UPPER(@NOME) AS 'Nome do Aluno'
 	END
-
-SELECT @SALARIO as 'Salário', UPPER(@NOME) AS 'Nome do aluno'
+/* ou
+SELECT @SALARIO as 'Salário', UPPER(@NOME) AS 'Nome do aluno' */
 ---------------------------------------------------------------------------------------------
 /* 6) Elabore um laço de repetição usando PL/SQL que use While e quando o valor for 8 pare e
 finalize o programa. */
@@ -455,8 +467,8 @@ WHILE @NUM <= 8
 ---------------------------------------------------------------------------------------------
 /* 7) Desenvolva um script em PL/SQL que use duas variáveis e verifique se a media for acima de
 6 o aluno está aprovado senão reprovado. */
-DECLARE @NOTA1 NUMERIC (6,2)
-DECLARE @NOTA2 NUMERIC (6,2)
+DECLARE @NOTA1 NUMERIC (3,1)
+DECLARE @NOTA2 NUMERIC (3,1)
 
 SET @NOTA1 = 8.0
 SET @NOTA2 = 6.0
@@ -473,27 +485,30 @@ impares. */
 DECLARE @NUM INT
 DECLARE @QUANTIDADEPARES INT
 DECLARE @QUANTIDADEIMPARES INT
-DECLARE @SOMAPARESEIMPARES INT
+DECLARE @SOMAPARES INT
+DECLARE @SOMAIMPARES INT
 
 SET @NUM = 1
 SET @QUANTIDADEPARES = 0
 SET @QUANTIDADEIMPARES = 0
-SET @SOMAPARESEIMPARES = 0
+SET @SOMAPARES = 0
+SET @SOMAIMPARES = 0
 
 WHILE @NUM <= 100
 	BEGIN
 		IF @NUM % 2 = 0
 			BEGIN
 			SET @QUANTIDADEPARES += 1
+			SET @SOMAPARES += @NUM
 		END
 		ELSE
 			BEGIN
 			SET @QUANTIDADEIMPARES += 1
+			SET @SOMAIMPARES += @NUM
 		END
 		SET @NUM += 1
 	END
-	SET @SOMAPARESEIMPARES = @QUANTIDADEPARES + @QUANTIDADEIMPARES
-	SELECT @QUANTIDADEPARES AS 'Quantidade de Números Pares', @QUANTIDADEIMPARES AS 'Quantidade de Números Ímpares', @SOMAPARESEIMPARES AS 'Soma dos pares e ímpares'
+	SELECT @QUANTIDADEPARES AS 'Quantidade de Números Pares', @QUANTIDADEIMPARES AS 'Quantidade de Números Ímpares', @SOMAPARES AS 'Soma dos pares', @SOMAIMPARES AS 'Soma dos Ímpares'
 ---------------------------------------------------------------------------------------------
 /* 9) Crie um script em PL/SQL usando CASE que mostre um laço de repetição de 1 até 5000 e
 apresente a seguinte mensagem:
@@ -515,3 +530,173 @@ WHILE @NUM <= 5000
 		END as 'Categoria'
 		SET @NUM +=1
 	END
+---------------------------------------------------------------------------------------------
+CREATE TABLE [FUNCIONARIO]
+	(Matricula  Int   NOT NULL Identity(1,1) --Contador automático 
+	,Nome Varchar(100) NOT NULL 
+	,CPF  CHAR(11)  NOT NULL 
+	,DataNcto DATETIME  NOT NULL 
+	,ADMISSAO DATETIME NOT NULL DEFAULT GETDATE() 
+	,SALARIO  NUMERIC(6,2) NOT NULL 
+	,STATUS  char(1) NOT NULL 
+	,DEPARTAMENTO VARCHAR(100) NOT NULL 
+	,CONSTRAINT PK_FUNCIONARIO Primary key (Matricula)  -- Chave Primária (Não se repete e não pode ser nula) 
+	,CONSTRAINT UN_FUNCIONARIO UNIQUE (CPF,ADMISSAO)  -- Unique (Valor único não pode repetir) 
+) 
+ 
+-- MANIPULAÇÃO DE DADOS 
+-- Inserção de dados 
+INSERT [FUNCIONARIO] (Nome, CPF, DataNcto, SALARIO, STATUS, 
+DEPARTAMENTO) VALUES ('José da Silva','12345678900','19911121', 1500, 
+1, 'TI') 
+INSERT [FUNCIONARIO] (Nome, CPF, DataNcto, SALARIO, STATUS, 
+DEPARTAMENTO) VALUES ('Maria da Silva',  '12345678911','20000317', 
+2000, 1, 'TI') 
+INSERT [FUNCIONARIO] (Nome, CPF, DataNcto, SALARIO, STATUS, 
+DEPARTAMENTO) VALUES ('Ana da Silva', '12345678922','20000417', 3500, 
+2, 'RH')
+SELECT * FROM FUNCIONARIO
+TRUNCATE TABLE FUNCIONARIO
+------------------------------------------------------- 
+--Variáveis globais 
+declare @nome varchar(100),  @mes varchar(20) 
+
+--Variáveis locais 
+declare @admissao varchar(20), @salario numeric(7,2), @status 
+char(1), @departamento varchar(100) 
+------------------------------------------------------- 
+--Variáveis globais que serão passadas como parâmetro (STORED PROCEDURE) 
+set @mes='janeiro' 
+set @nome='José da silva' 
+------------------------------------------------------- 
+--Verifica se o Funcionário existe no Banco de Dados 
+If (select COUNT(*) from FUNCIONARIO where NOME=@nome) = 0 
+ print 'Funcionário não cadastrado' 
+Else 
+Begin 
+  
+--Atribui valores às variáveis 
+select @salario=salario,  
+  @status=status,  
+  @departamento=departamento  
+from funcionario where nome = @nome 
+ 
+set @admissao = (select case month(admissao)  
+    when 1 then 'Janeiro' 
+                when 2 then 'Fevereiro' 
+                when 3 then 'Março' 
+                when 4 then 'Abril' 
+                when 5 then 'Maio' 
+                when 6 then 'Junho' 
+                when 7 then 'Julho' 
+                when 8 then 'Agosto' 
+                when 9 then 'Setembro' 
+                when 10 then 'Outubro' 
+                when 11 then 'Novembro' 
+                else 'Dezembro' 
+                END   
+                from funcionario where nome = @nome) 
+ 
+if @admissao = @mes 
+    Begin 
+        if @status = 1 
+            begin 
+                if @departamento = 'TI' 
+                    Begin 
+      print 'Esse mês tem gratificação + R$ 
+1000' 
+     End 
+                else 
+                    Begin 
+      print 'Esse mês tem gratificação' 
+     End 
+            end 
+        else 
+            begin 
+    print 'sem gratificação - Afastado' 
+   end 
+    End 
+Else 
+    Begin 
+  print 'sem gratificação' 
+ End 
+End
+---------------------------------------------------------------------------------------------
+/* 1) Conceder gratificação de 10% para os funcionários que fazem aniversário no mês corrente. */
+ DECLARE @NOVOSALARIO NUMERIC(6, 2)
+ DECLARE @NOME VARCHAR(100)
+
+ SET @NOVOSALARIO = (SELECT SALARIO FROM FUNCIONARIO)
+ SET @NOME = (SELECT NOME FROM FUNCIONARIO WHERE DataNcto = MONTH(GETDATE()))
+
+ SELECT @NOME as 'Nome'
+
+-- ...
+---------------------------------------------------------------------------------------------
+create table ALUNO2  
+(matricula int primary key,  
+ nome varchar(100),  
+ turma varchar(100),  
+ mensalidade numeric(7,2),  
+ nota1 numeric(3,1),  
+ nota2 numeric(3,1), 
+ municipio varchar(100))
+ 
+ insert aluno2 values(1,'José','3a',1500, 8,9, 'Curitiba') 
+ insert aluno2 values(2,'Maira','3B',500, 2,9, 'São José dos Pinhais') 
+ insert aluno2 values(3,'Pedro','3a',2500, 6,5, 'Curitiba') 
+ insert aluno2 values(4,'Tereza','3B',500, 9,9, 'São José dos Pinhais') 
+ insert aluno2 values(5,'Marli','3a',3500, 4,2, 'Curitiba') 
+ insert aluno2 values(6,'Roberto','3B',750, 8,9, 'Curitiba') 
+ insert aluno2 values(7,'Carlos','3a',100, 7,5, 'São José dos Pinhais') 
+ insert aluno2 values(8,'Maria','3B',2500, 10,8, 'Curitiba') 
+ insert aluno2 values(9,'Francisco','3a',3500, 4,3, 'Curitiba') 
+ insert aluno2 values(10,'Marialva','3B',4500, 8,9, 'São José dos Pinhais')
+ SELECT * FROM ALUNO2
+ TRUNCATE TABLE ALUNO2
+
+---------------------------------------------------------------------------------------
+/* 1. Crie uma stored procedure que selecione os alunos do município de Curitiba. */
+CREATE PROCEDURE sp_aluno
+AS
+SELECT * FROM ALUNO2 WHERE Municipio = 'Curitiba'
+
+EXECUTE sp_aluno
+-- ou EXEC aluno3
+
+---------------------------------------------------------------------------------------
+/* 2. Crie uma stored procedure que selecione o número de alunos do município 
+de São José dos Pinhais com média maior ou igual a 7.  */
+CREATE PROCEDURE sp_nomeAluno
+
+-- Altera a Procedure
+ALTER PROCEDURE sp_nomeAluno 
+AS
+SELECT COUNT(*) as 'Número' FROM ALUNO2 
+
+WHERE Municipio = 'São José dos Pinhais' and nota1 + nota2 / 2 > 7
+
+EXECUTE sp_nomeAluno
+
+---------------------------------------------------------------------------------------
+/* 3. Crie uma stored procedure que some o valor das mensalidades por 
+município passando o nome do município por parâmetro. */
+
+
+
+ 
+
+
+
+
+
+
+
+ 
+/* 2) Calcular desconto de 1,5% para os funcionários do departamento de 
+RH. */
+ 
+/* 3) Calcular aumento 15% para os funcionários do departamento de TI. */
+ 
+/* 4) Montar uma consulta qualquer usando os comandos apresentados. */
+ 
