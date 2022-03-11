@@ -621,17 +621,7 @@ Else
   print 'sem gratificação' 
  End 
 End
----------------------------------------------------------------------------------------------
-/* 1) Conceder gratificação de 10% para os funcionários que fazem aniversário no mês corrente. */
- DECLARE @NOVOSALARIO NUMERIC(6, 2)
- DECLARE @NOME VARCHAR(100)
 
- SET @NOVOSALARIO = (SELECT SALARIO FROM FUNCIONARIO)
- SET @NOME = (SELECT NOME FROM FUNCIONARIO WHERE DataNcto = MONTH(GETDATE()))
-
- SELECT @NOME as 'Nome'
-
--- ...
 ---------------------------------------------------------------------------------------------
 create table ALUNO2  
 (matricula int primary key,  
@@ -667,6 +657,8 @@ EXECUTE sp_aluno
 ---------------------------------------------------------------------------------------
 /* 2. Crie uma stored procedure que selecione o número de alunos do município 
 de São José dos Pinhais com média maior ou igual a 7.  */
+
+-- sp = stored procedure (Procedimento Armazenado)
 CREATE PROCEDURE sp_nomeAluno
 
 -- Altera a Procedure
@@ -674,7 +666,7 @@ ALTER PROCEDURE sp_nomeAluno
 AS
 SELECT COUNT(*) as 'Número' FROM ALUNO2 
 
-WHERE Municipio = 'São José dos Pinhais' and nota1 + nota2 / 2 > 7
+WHERE Municipio = 'São José dos Pinhais' and ((nota1 + nota2) / 2) >= 7
 
 EXECUTE sp_nomeAluno
 
@@ -682,21 +674,50 @@ EXECUTE sp_nomeAluno
 /* 3. Crie uma stored procedure que some o valor das mensalidades por 
 município passando o nome do município por parâmetro. */
 
+CREATE PROCEDURE sp_valorMensalidades @municipio varchar(100)
+ALTER PROCEDURE sp_valorMensalidades @municipio varchar(100)
+AS SELECT SUM(mensalidade) AS 'Soma das mensalidades por município' FROM ALUNO2 WHERE municipio = @municipio
 
+EXEC sp_valorMensalidades @municipio = 'Curitiba'
 
- 
+---------------------------------------------------------------------------------------
+/* 4. Crie uma stored procedure que calcule a média de um aluno, passando a
+matricula do mesmo como parâmetro e informe se o mesmo está aprovado
+para média maior igual a sete, reprovado para média menor que quatro e em
+recuperação para médias maiores ou igual a quatro e menores que sete. */
 
+CREATE PROCEDURE sp_mediaAluno @matricula int
+-- ALTER PROCEDURE sp_mediaAluno @matricula int
+AS 
+	DECLARE @MEDIA NUMERIC(7,2)
+	SET @MEDIA = (SELECT (nota1 + nota2 / 2) FROM ALUNO2 WHERE matricula = @matricula)
 
+	IF (@MEDIA >= 7)
+		BEGIN
+			SELECT 'Aluno aprovado' AS 'Situação do aluno'
+		END
+	ELSE IF (@MEDIA < 4)
+		BEGIN
+			SELECT 'Aluno reprovado' AS 'Situação do aluno'
+		END
+	ELSE IF (@MEDIA >= 4 AND @MEDIA < 7)
+		BEGIN
+			SELECT 'Aluno em recuperação' AS 'Situação do aluno'
+		END
 
+EXECUTE sp_mediaAluno @matricula = 2
 
+---------------------------------------------------------------------------------------
+/* 5. Crie uma stored procedure que mostre o nome e a média de todos alunos do
+município de Curitiba. */
 
+CREATE PROCEDURE sp_situacaoAlunos
+ALTER PROCEDURE sp_situacaoAlunos 
+AS 
+	SELECT nome as 'Nome do Aluno' FROM ALUNO2 WHERE municipio = 'Curitiba' 
+	SELECT ((nota1 + nota2) / 2) as 'Média do Aluno' FROM ALUNO2 WHERE municipio = 'Curitiba'
+	SELECT SUM(((nota1 + nota2) / 2)) / COUNT(*) as 'Média Geral' FROM ALUNO2 WHERE municipio = 'Curitiba'
 
+EXECUTE sp_situacaoAlunos
 
- 
-/* 2) Calcular desconto de 1,5% para os funcionários do departamento de 
-RH. */
- 
-/* 3) Calcular aumento 15% para os funcionários do departamento de TI. */
- 
-/* 4) Montar uma consulta qualquer usando os comandos apresentados. */
- 
+---------------------------------------------------------------------------------------
