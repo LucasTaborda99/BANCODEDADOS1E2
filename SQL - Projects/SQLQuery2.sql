@@ -648,11 +648,12 @@ create table ALUNO2
 ---------------------------------------------------------------------------------------
 /* 1. Crie uma stored procedure que selecione os alunos do município de Curitiba. */
 CREATE PROCEDURE sp_aluno
+--ALTER PROCEDURE sp_aluno
 AS
 SELECT * FROM ALUNO2 WHERE Municipio = 'Curitiba'
 
 EXECUTE sp_aluno
--- ou EXEC aluno3
+-- ou EXEC sp_aluno
 
 ---------------------------------------------------------------------------------------
 /* 2. Crie uma stored procedure que selecione o número de alunos do município 
@@ -662,7 +663,7 @@ de São José dos Pinhais com média maior ou igual a 7.  */
 CREATE PROCEDURE sp_nomeAluno
 
 -- Altera a Procedure
-ALTER PROCEDURE sp_nomeAluno 
+--ALTER PROCEDURE sp_nomeAluno 
 AS
 SELECT COUNT(*) as 'Número' FROM ALUNO2 
 
@@ -675,7 +676,7 @@ EXECUTE sp_nomeAluno
 município passando o nome do município por parâmetro. */
 
 CREATE PROCEDURE sp_valorMensalidades @municipio varchar(100)
-ALTER PROCEDURE sp_valorMensalidades @municipio varchar(100)
+--ALTER PROCEDURE sp_valorMensalidades @municipio varchar(100)
 AS SELECT SUM(mensalidade) AS 'Soma das mensalidades por município' FROM ALUNO2 WHERE municipio = @municipio
 
 EXEC sp_valorMensalidades @municipio = 'Curitiba'
@@ -687,23 +688,21 @@ para média maior igual a sete, reprovado para média menor que quatro e em
 recuperação para médias maiores ou igual a quatro e menores que sete. */
 
 CREATE PROCEDURE sp_mediaAluno @matricula int
--- ALTER PROCEDURE sp_mediaAluno @matricula int
+ALTER PROCEDURE sp_mediaAluno @matricula int
 AS 
 	DECLARE @MEDIA NUMERIC(7,2)
 	SET @MEDIA = (SELECT (nota1 + nota2 / 2) FROM ALUNO2 WHERE matricula = @matricula)
 
 	IF (@MEDIA >= 7)
 		BEGIN
-			SELECT 'Aluno aprovado' AS 'Situação do aluno'
+			SELECT 'Aluno aprovado - Média: ' + CAST(@MEDIA AS CHAR(5)) AS 'Situação do aluno'
 		END
 	ELSE IF (@MEDIA < 4)
 		BEGIN
-			SELECT 'Aluno reprovado' AS 'Situação do aluno'
+			SELECT 'Aluno reprovado - Média: ' + CONVERT(CHAR(5), @MEDIA) AS 'Situação do aluno' 
 		END
-	ELSE IF (@MEDIA >= 4 AND @MEDIA < 7)
-		BEGIN
-			SELECT 'Aluno em recuperação' AS 'Situação do aluno'
-		END
+	ELSE
+			SELECT 'Aluno em recuperação - Média: ' + CONVERT(CHAR(5), @MEDIA) AS 'Situação do aluno'
 
 EXECUTE sp_mediaAluno @matricula = 2
 
@@ -712,11 +711,9 @@ EXECUTE sp_mediaAluno @matricula = 2
 município de Curitiba. */
 
 CREATE PROCEDURE sp_situacaoAlunos
-ALTER PROCEDURE sp_situacaoAlunos 
+--ALTER PROCEDURE sp_situacaoAlunos 
 AS 
-	SELECT nome as 'Nome do Aluno' FROM ALUNO2 WHERE municipio = 'Curitiba' 
-	SELECT ((nota1 + nota2) / 2) as 'Média do Aluno' FROM ALUNO2 WHERE municipio = 'Curitiba'
-	SELECT SUM(((nota1 + nota2) / 2)) / COUNT(*) as 'Média Geral' FROM ALUNO2 WHERE municipio = 'Curitiba'
+	SELECT nome as 'Nome do Aluno', ((nota1 + nota2) / 2) as 'Média do aluno' FROM ALUNO2 WHERE municipio = 'Curitiba' 
 
 EXECUTE sp_situacaoAlunos
 
