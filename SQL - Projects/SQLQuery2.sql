@@ -718,3 +718,175 @@ AS
 EXECUTE sp_situacaoAlunos
 
 ---------------------------------------------------------------------------------------
+-- Exemplos
+
+create table aluno
+(matricula int primary key identity,
+ nome varchar(100),
+ cpf char(11),
+ email varchar(100),
+ turma varchar(100)) 
+
+/* Criação de procedure de inserção de dados */
+create procedure sp_alu
+@nome varchar(100), @cpf char(11), @email varchar(100), @turma varchar(100)
+as
+insert aluno (nome, cpf, email, turma) values (@nome, @cpf, @email, @turma)
+/* Na criação da procedure executar somente até aqui */
+/* Comando para executar a procedure */
+exec sp_alu @nome='josé', @cpf = 42345678402, @email = 'jose@uol.com.br', @turma =
+'informática'
+ 
+/* Criação de procedure que controla a inserção repetida de aluno e se a turma está lotada */
+create procedure sp_aluno
+@nome varchar(100), @cpf char(11), @email varchar(100), @turma varchar(100)
+as
+declare @cont int
+IF EXISTS (SELECT cpf FROM aluno WHERE cpf = @cpf)
+begin
+print 'CPF já cadastrado'
+end
+else
+begin
+set @cont = (select count(*) from aluno where turma = @turma)
+if @cont > 10
+print 'Turma lotada'
+else
+insert aluno (nome, cpf, email, turma) values (@nome, @cpf, @email, @turma)
+end
+/* Na criação da procedure executar somente até aqui */
+/* Comando para executar a procedure */
+exec sp_aluno @nome='josé', @cpf = 42345678402, @email = 'jose@uol.com.br', @turma =
+'informática'
+ 
+/* Exemplo de Stored Procedure que insere dados se o aluno não existir e altera se o mesmo
+já for cadastrado */
+alter procedure sp_aluno_IU
+@nome varchar(100), @cpf char(11), @email varchar(100), @turma varchar(100)
+as
+declare @cont int
+IF EXISTS (SELECT cpf FROM aluno WHERE cpf = @cpf)
+begin
+Print 'CPF já cadastrado'
+Update aluno set nome=@nome, email=@email, turma=@turma where
+cpf=@cpf
+end
+else
+begin
+set @cont = (select count(*) from aluno where turma = @turma)
+if @cont > 10
+print 'Turma lotada'
+else
+insert aluno (nome, cpf, email, turma) values (@nome, @cpf, @email, @turma)
+end
+/* Na criação da procedure executar somente até aqui */
+/* Comando para executar a procedure */
+exec sp_aluno_IU @nome='carlos de oliveira', @cpf = 42345678302, @email =
+'carlos@uol.com.br', @turma = 'informática' 
+---------------------------------------------------------------------------------
+/* Exercícios */
+
+create table funcionario
+(matricula int primary key,
+ nome varchar(100),
+ salario numeric(20,4),
+ departamento varchar(100),
+ cargo varchar(100))
+
+ drop table funcionario
+
+ select * from funcionario
+
+ truncate table funcionario
+
+/* 1. Criar procedure para inserir dados na tabela FUNCIONARIO (MATRICULA, NOME,
+SALARIO, DEPARTAMENTO, CARGO); */
+create procedure sp_inser
+@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+alter procedure sp_inser
+@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+
+as
+insert funcionario (matricula, nome, salario, departamento, cargo) values (@matricula, @nome, @salario, @departamento, @cargo)
+
+exec sp_inser @matricula = 1, @nome='Lucas', @salario = 1000.00, @departamento = 'TI', @cargo = 'Dev Júnior'
+select * from funcionario
+
+---------------------------------------------------------------------------------
+/* 2. Criar procedure para inserir dados na tabela FUNCIONARIO do exercício 1. Se o
+funcionário já existir alterar os dados do mesmo. */
+create procedure sp_inser2
+@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+
+alter procedure sp_inser2
+@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+
+as
+
+IF EXISTS (SELECT nome FROM funcionario WHERE nome = @nome)
+begin
+Update funcionario set nome = @nome, salario = @salario, 
+departamento = @departamento, cargo = @cargo where nome=@nome
+end
+else
+insert funcionario (matricula, nome, salario, departamento, cargo) values (@matricula, @nome, @salario, @departamento, @cargo)
+
+exec sp_inser2 @matricula = 2, @nome='LucasT', @salario = 1000.00, @departamento = 'TI', @cargo = 'Dev Júnior'
+select * from funcionario
+
+---------------------------------------------------------------------------------
+/* 3. Criar procedure para inserir dados na tabela FUNCIONARIO do exercício 1. Se o cargo
+do funcionário for GERENTE o salário do mesmo deve ser acrescido de um bônus de
+10% e se o funcionário já existir alterar os dados devem ser alterados na tabela. */
+create procedure sp_inser3
+@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+
+--alter procedure sp_inser3
+--@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+
+as
+
+IF EXISTS (SELECT cargo FROM funcionario WHERE cargo = @cargo)
+begin
+Update funcionario set salario = (salario + (salario * 0.1))
+end
+else 
+IF EXISTS (SELECT nome FROM funcionario WHERE nome = @nome)
+begin
+insert funcionario (matricula, nome, salario, departamento, cargo) values (@matricula, @nome, @salario, @departamento, @cargo)
+end
+exec sp_inser3 @matricula = 3, @nome='LucasT', @salario = 1000.00, @departamento = 'TI', @cargo = 'Dev Júnioryy'
+select * from funcionario
+
+---------------------------------------------------------------------------------
+/* 4. Considerar a tabela PRODUTO (CODIGO, NOME, QUANTIDADE, VALOR) para criar
+uma procedure de inserção de dados e se o produto já existir alterar a quantidade em
+estoque do mesmo. */
+
+create table produto
+(codigo int primary key,
+ nome varchar(100),
+ quantidade int,
+ valor varchar(100))
+
+ drop table produto
+
+ select * from produto
+
+ truncate table produto
+
+ create procedure sp_inser4 @codigo int, @nome varchar(100), @quantidade int, @valor varchar(100)
+ --alter procedure sp_inser4 @codigo int, @nome varchar(100), @quantidade int, @valor varchar(100)
+
+ as
+
+ if EXISTS (SELECT codigo FROM produto where codigo = @codigo)
+ begin
+ update produto set quantidade = @quantidade
+ end
+ else 
+ insert produto (codigo, nome, quantidade, valor) values (@codigo, @nome, @quantidade, @valor)
+
+ exec sp_inser4 1,'Parafuso',12, 100.00
+
+ select * from produto
