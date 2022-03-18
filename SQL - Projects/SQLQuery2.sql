@@ -898,7 +898,6 @@ EXEC sp_inser4 1,'Parafuso',12, 100.00
 SELECT * FROM produto
 
  ---------------------------------------------------------------------------------
-
 /* 5. Considerando o DE-R acima, elaborar stored procedure para inserir dados na tabela
 NF_PRODUTO (QUANTIDADE, CODIGO, NUMERO) cancelando a inserção se a
 quantidade vendida for menor que a quantidade em estoque. */
@@ -917,5 +916,14 @@ CREATE PROCEDURE sp_inser5 @quantidade int, @codigo int, @numero int
 
 AS
 
-IF (SELECT quantidade <
+INSERT NF_PRODUTO (quantidade, codigo, numero) VALUES (@quantidade, @codigo, @numero)
+
+IF (SELECT (quantidade_vendida < quantidade_estoque) FROM NF_PRODUTO WHERE quantidade = @quantidade)
+	BEGIN
+		
+	END
+
+EXEC sp_inser5 10, 1, 1234
+
+---------------------------------------------------------------------------------
 
