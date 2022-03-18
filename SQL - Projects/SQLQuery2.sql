@@ -925,5 +925,7 @@ IF (SELECT (quantidade_vendida < quantidade_estoque) FROM NF_PRODUTO WHERE quant
 
 EXEC sp_inser5 10, 1, 1234
 
+SELECT * FROM NF_PRODUTO
+
 ---------------------------------------------------------------------------------
 
