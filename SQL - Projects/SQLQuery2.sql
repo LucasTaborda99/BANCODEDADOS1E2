@@ -916,14 +916,17 @@ CREATE PROCEDURE sp_inser5 @quantidade int, @codigo int, @numero int
 
 AS
 
+DECLARE @quantidade_estoque INT
+SET @quantidade_estoque = 1
+
 INSERT NF_PRODUTO (quantidade, codigo, numero) VALUES (@quantidade, @codigo, @numero)
 
-IF (SELECT (quantidade_vendida < quantidade_estoque) FROM NF_PRODUTO WHERE quantidade = @quantidade)
+IF (SELECT (quantidade < @quantidade_estoque) FROM NF_PRODUTO WHERE quantidade = @quantidade)
 	BEGIN
-		
+		TRUNCATE TABLE NF_PRODUTO
 	END
 
-EXEC sp_inser5 10, 1, 1234
+EXEC sp_inser5 10, 1, 1234 
 
 SELECT * FROM NF_PRODUTO
 
