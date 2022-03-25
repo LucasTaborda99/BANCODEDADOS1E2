@@ -704,7 +704,7 @@ AS
 	ELSE
 			SELECT 'Aluno em recuperação - Média: ' + CONVERT(CHAR(5), @MEDIA) AS 'Situação do aluno'
 
-EXECUTE sp_mediaAluno @matricula = 2
+EXECUTE sp_mediaAluno @matricula = 10
 
 ---------------------------------------------------------------------------------------
 /* 5. Crie uma stored procedure que mostre o nome e a média de todos alunos do
@@ -931,7 +931,8 @@ EXEC sp_inser5 10, 1, 1234
 SELECT * FROM NF_PRODUTO
 
 ---------------------------------------------------------------------------------
---------------------Exercício 1--------------------------------
+/* 1. Criar procedure para inserir dados na tabela FUNCIONARIO (MATRICULA, NOME,
+SALARIO, DEPARTAMENTO, CARGO); */
 create table FUNCIONARIO
 ( MATRICULA int not null primary key,
  NOME varchar(30),
@@ -950,7 +951,8 @@ exec insert_funcionario @matricula = 19550942, @nome = 'Maria Silva', @salario =
 @departamento = 'TI', @cargo = 'Digitadora'
 SELECT * FROM FUNCIONARIO
 
----------------------------------Exercicio 2------------------
+/* 2. Criar procedure para inserir dados na tabela FUNCIONARIO do exercício 1. Se o
+funcionário já existir alterar os dados do mesmo. */
 create procedure insert_funcionario_2
  @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento
 varchar(40), @cargo
@@ -973,8 +975,10 @@ exec insert_funcionario_2 @matricula = 19550943, @nome = 'Mario da Cruz', @salar
 3900,
 @departamento = 'RH', @cargo = 'Recrutador'
 select * from funcionario
-----------------------------------Exercicio3--------------------------------
-create procedure insert_bonus_gerente
+
+/* 3. Criar procedure para inserir dados na tabela FUNCIONARIO do exercício 1. Se o cargo
+do funcionário for GERENTE o salário do mesmo deve ser acrescido de um bônus de
+10% e se o funcionário já existir alterar os dados devem ser alterados na tabela. */
  @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento
 varchar(40), @cargo
 varchar(40)
@@ -1007,7 +1011,10 @@ SELECT * FROM FUNCIONARIO
 exec insert_bonus_gerente @matricula = 19550943, @nome = 'Ana Paula', @salario =
 1900,
 @departamento = 'RH', @cargo = 'GERENTE'
-----------------------------Exercicio 4------------------------------
+
+/* 4. Considerar a tabela PRODUTO (CODIGO, NOME, QUANTIDADE, VALOR) para criar
+uma procedure de inserção de dados e se o produto já existir alterar a quantidade em
+estoque do mesmo. */
 create table PRODUTO
 (
  CODIGO int not null primary key,
@@ -1035,16 +1042,20 @@ END
 exec sp_insert_produtos @codigo = 1450, @nome = 'Mamao', @quantidade = 55, @valor =
 3.20 
 SELECT * FROM PRODUTO
---------------------------------Exercicio 5-----------------------------------------
----
+
+/* 5. Considerando o DE-R acima, elaborar stored procedure para inserir dados na tabela
+NF_PRODUTO (QUANTIDADE, CODIGO, NUMERO) cancelando a inserção se a
+quantidade vendida for menor que a quantidade em estoque. */
 create table NF_PRODUTO
 (
 QUANTIDADE int,
 NF_CODIGO int,
 NF_NUMERO int,
-CONSTRAINT FK_Codigo FOREIGN KEY (NF_CODIGO) REFERENCES PRODUTO (CODIGO),
+CONSTRAINT FK_Codig FOREIGN KEY (NF_CODIGO) REFERENCES PRODUTO (CODIGO),
 CONSTRAINT FK_Numero FOREIGN KEY (NF_NUMERO) REFERENCES NOTA_FISCAL (NUMERO)
 )
+SELECT * FROM NF_PRODUTO
+
 create table PRODUTO
 (
  CODIGO int not null primary key,
@@ -1089,8 +1100,8 @@ se o mesmo está aprovado (maior igual a 7), recuperação (maior que 4 e menor
 que 7) e reprovado (menor que 4). Crie a tabela com os seguintes campos
 código, nome, nota1, nota2, coddis, mensalidade, qtdefalta) */
 
-create table ALUNO
-( CODIGO int not null primary key,
+CREATE TABLE ALUNOS
+( CODIGO int primary key,
  NOME varchar(30),
  NOTA1 numeric(12,2),
  NOTA2 numeric(12,2),
@@ -1098,39 +1109,113 @@ create table ALUNO
  MENSALIDADE numeric(12,2),
  QTDEFALTA int
 )
-create procedure sp_verifica
-@nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int,
-@mensalidade numeric(12,2), @qtdefalta int
+
+SELECT * FROM ALUNOS
+DROP TABLE ALUNOS
+
+INSERT INTO ALUNOS values(1,'José', 10.2, 5.5, 2, 550.50, 6)
+INSERT INTO ALUNOS values(2,'Lucas', 6, 4, 1, 1000.50, 4) 
+INSERT INTO ALUNOS values(3,'Maria', 8, 3, 7, 320.50, 0)
+INSERT INTO ALUNOS values(4,'João', 2, 2, 3, 300.00, 1)
+INSERT INTO ALUNOS values(5,'Josélia', 4, 4, 2, 600.00, 3)
+INSERT INTO ALUNOS values(6,'Pedro', 10, 9.6, 2, 500.00, 5)
+INSERT INTO ALUNOS values(7,'Larissa', 5, 2, 1, 100.90, 4) 
+INSERT INTO ALUNOS values(8,'Daniela', 2, 1, 8, 1100.50, 3)
+INSERT INTO ALUNOS values(9,'Júlio', 9, 8, 4, 400.00, 8)
+INSERT INTO ALUNOS values(10,'César', 5, 4, 3, 900.00, 0)
+SELECT * FROM ALUNOS     
+TRUNCATE TABLE ALUNOS
+
+--CREATE PROCEDURE sp_verifica @codigo int
+
+ALTER PROCEDURE sp_verifica @codigo int
 
 AS
-SELECT @nome = CODIGO FROM PRODUTO WHERE CODIGO = @codigo
-IF @matricula_cod = 0
+
+DECLARE @MEDIA numeric(12,2)
+SET @MEDIA = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
+
+IF @MEDIA >=  7
 BEGIN
-INSERT INTO FUNCIONARIO values(@matricula, @nome, @salario, @departamento, @cargo)
+	PRINT 'Aluno Aprovado - Média: ' + CONVERT(CHAR(5), @MEDIA)
+END
+ELSE IF @MEDIA > 4 and @MEDIA < 7
+BEGIN
+	PRINT 'Aluno em Recuperação - Média: ' + CONVERT(CHAR(5), @MEDIA)
 END
 ELSE
 BEGIN
-UPDATE FUNCIONARIO
-SET NOME = @nome, SALARIO = @salario, DEPARTAMENTO = @departamento, CARGO = @cargo
-WHERE MATRICULA = @matricula
+	PRINT 'Aluno Reprovado - Média: ' + CONVERT(CHAR(5), @MEDIA)
 END
-exec insert_funcionario_2 @matricula = 19550943, @nome = 'Mario da Cruz', @salario =
-3900,
-@departamento = 'RH', @cargo = 'Recrutador'
-select * from funcionario
+
+EXEC sp_verifica 2
+
+SELECT * FROM ALUNOS
+
+------------------------------------------------------------------------------
 
 /* 2 Crie uma procedure em PL/SQL para inserir um aluno na tabela apenas se a
 quantidade de alunos for menor que 10 senão apresentar a quantidade e
 mensagem turma lotada. */
 
+--CREATE PROCEDURE sp_insert_aluno @codigo int, @nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int, @mensalidade numeric(12,2), @qtdefalta int
+ALTER PROCEDURE sp_insert_aluno @codigo int, @nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int, @mensalidade numeric(12,2), @qtdefalta int
+AS
 
+DECLARE @quantidade int
+SET @quantidade = (SELECT COUNT(*) FROM ALUNOS)
 
+IF @quantidade < 10
+BEGIN
+	INSERT INTO ALUNOS (codigo, nome, nota1, nota2, coddis, mensalidade, qtdefalta) values (@codigo, @nome, @nota1, @nota2, @coddis, @mensalidade, @qtdefalta)
+END
+ELSE
+BEGIN
+	SELECT 'A quantidade de alunos dessa turma é ' + CONVERT(CHAR(5), @quantidade) + '- Turma lotada' AS 'Situação da turma'
+END
+
+EXEC sp_insert_aluno 11, 'Gabriela', 6, 6, 2, 320.00, 7 
+
+SELECT * FROM ALUNOS
 
 /* 3) Faça uma procedure em PL/SQL que apresente a quantidade de alunos
-aprovados, em recuperação e aprovados. */
+aprovados, em recuperação e reprovados. */
+
+--CREATE PROCEDURE sp_situacao @codigo int
+ALTER PROCEDURE sp_situacao @codigo int
+AS
+
+DECLARE @MEDIA numeric(12,2), @aprovados int, @recuperacao int, @reprovados int
+SET @MEDIA = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
+SET @aprovados = 0
+SET @recuperacao = 0
+SET @reprovados = 0
+
+IF @MEDIA >=  7
+BEGIN
+	SET @aprovados = @aprovados + 1
+END
+ELSE IF @MEDIA > 4 and @MEDIA < 7
+BEGIN
+	SET @recuperacao = @recuperacao + 1
+END
+ELSE
+BEGIN
+	SET @reprovados = @reprovados + 1
+END
+
+SELECT @aprovados as 'Aprovados', @recuperacao as 'Recuperação', @reprovados as 'Reprovados'
+
+EXEC sp_situacao 1
+
+--DECLARE @aprovados int, @recuperacao int, @reprovados int
+--SET @aprovados = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
+--SET @recuperacao = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
+--SET @reprovados = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
 
 
 
+---------------------------------------------------------------------------------
 
 /* 4) Crie a tabela disciplina (código, nome, cargaho) e relacione com a tabela aluno
 e insira os dados na tabela disciplina e no campo da tabela aluno e elabore uma
@@ -1139,9 +1224,72 @@ a) Para a disciplina Matemática mensalidade mais 10%
 b) Para Banco de dados mensalidade menos 20 %
 c) Para Programação mensalidade mais 15% */
 
+CREATE TABLE DISCIPLINA
+(
+CODIGO int,
+NOME varchar (50),
+CARGA varchar (50),
+CONSTRAINT FK_CODIGO FOREIGN KEY (CODIGO) REFERENCES ALUNOS (CODIGO),
+)
+SELECT * FROM DISCIPLINA
+DROP TABLE DISCIPLINA
+
+--CREATE PROCEDURE sp_valores @codigo int, @nome varchar(50), @carga varchar(50), @mensalidade numeric(12,2)
+ALTER PROCEDURE sp_valores @codigo int, @nome varchar(50), @carga varchar(50)
+AS
+INSERT INTO DISCIPLINA (CODIGO, NOME, CARGA) VALUES (@codigo, @nome, @carga)
+
+EXEC sp_valores 1, Matemática, 10, 1000.00
+
+SELECT * FROM DISCIPLINA
+TRUNCATE TABLE DISCIPLINA
+
+DECLARE @disciplina varchar(100)
+SET @disciplina = (SELECT NOME FROM DISCIPLINA)
+
+IF (@disciplina = 'Matemática')
+BEGIN
+	SET @mensalidade = @mensalidade + (@mensalidade * 0.1)
+END
+IF (@disciplina = 'Banco de dados')
+BEGIN
+	SET @mensalidade = @mensalidade + (@mensalidade * 0.2)
+END
+IF (@disciplina = 'Programação')
+BEGIN
+	SET @mensalidade = @mensalidade + (@mensalidade * 0.15)
+END
 
 
+
+
+
+
+
+---------------------------------------------------------------------------------
 
 /* 5 Desenvolva uma procedure em PL/SQL que passe por parâmetro o código do
 aluno e se não encontrar mostrar a mensagem aluno não cadastrado, se
 encontrar mostrar o nome a media e a disciplina cursada. */
+
+CREATE PROCEDURE sp_codigo_aluno @codigo int
+ALTER PROCEDURE sp_codigo_aluno @codigo int
+AS
+IF EXISTS (SELECT CODIGO FROM ALUNOS WHERE CODIGO = @codigo)
+BEGIN
+	SELECT NOME FROM ALUNOS WHERE CODIGO = @codigo
+END
+ELSE
+BEGIN
+	SELECT 'Aluno não encontrado' AS Aluno
+END
+
+EXEC sp_codigo_aluno 7
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------
