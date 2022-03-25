@@ -806,7 +806,7 @@ SALARIO, DEPARTAMENTO, CARGO); */
 CREATE PROCEDURE sp_inser
 @matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
 --ALTER PROCEDURE sp_inser
-@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+--@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
 
 AS
 
@@ -824,7 +824,7 @@ CREATE PROCEDURE sp_inser2
 @matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
 
 --ALTER PROCEDURE sp_inser2
-@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+--@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
 
 AS
 
@@ -836,7 +836,7 @@ IF EXISTS (SELECT nome FROM funcionario WHERE nome = @nome)
 ELSE
 	INSERT funcionario (matricula, nome, salario, departamento, cargo) values (@matricula, @nome, @salario, @departamento, @cargo)
 
-EXEC sp_inser2 @matricula = 2, @nome='LucasT', @salario = 1000.00, @departamento = 'TI', @cargo = 'Dev Júnior'
+EXEC sp_inser2 @matricula = 7, @nome='Luca', @salario = 1050.00, @departamento = 'TI', @cargo = 'Dev Júnior'
 
 SELECT * FROM funcionario
 
@@ -862,7 +862,7 @@ ELSE IF EXISTS (SELECT nome FROM funcionario WHERE nome = @nome)
 		INSERT funcionario (matricula, nome, salario, departamento, cargo) values (@matricula, @nome, @salario, @departamento, @cargo)
 	END
 
-EXEC sp_inser3 @matricula = 3, @nome='LucasT', @salario = 1000.00, @departamento = 'TI', @cargo = 'Dev Júnioryy'
+EXEC sp_inser3 @matricula = 4, @nome='Lucas', @salario = 1500.00, @departamento = 'TI', @cargo = 'Gerente'
 
 SELECT * FROM funcionario
 
@@ -931,4 +931,217 @@ EXEC sp_inser5 10, 1, 1234
 SELECT * FROM NF_PRODUTO
 
 ---------------------------------------------------------------------------------
+--------------------Exercício 1--------------------------------
+create table FUNCIONARIO
+( MATRICULA int not null primary key,
+ NOME varchar(30),
+ SALARIO numeric(12,2),
+ DEPARTAMENTO varchar(40),
+ CARGO varchar(40)
+)
+create procedure insert_funcionario
+ @matricula int, @nome varchar(30), @salario numeric(12,2),
+ @departamento varchar(40), @cargo varchar(40)
+AS
+INSERT INTO FUNCIONARIO values(@matricula, @nome, @salario, @departamento, @cargo)
+--execução
+exec insert_funcionario @matricula = 19550942, @nome = 'Maria Silva', @salario =
+800,
+@departamento = 'TI', @cargo = 'Digitadora'
+SELECT * FROM FUNCIONARIO
 
+---------------------------------Exercicio 2------------------
+create procedure insert_funcionario_2
+ @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento
+varchar(40), @cargo
+varchar(40)
+AS
+DECLARE @matricula_cod int
+set @matricula_cod = 0
+SELECT @matricula_cod = MATRICULA FROM FUNCIONARIO WHERE MATRICULA = @matricula
+IF @matricula_cod = 0
+BEGIN
+INSERT INTO FUNCIONARIO values(@matricula, @nome, @salario, @departamento, @cargo)
+END
+ELSE
+BEGIN
+UPDATE FUNCIONARIO
+SET NOME = @nome, SALARIO = @salario, DEPARTAMENTO = @departamento, CARGO = @cargo
+WHERE MATRICULA = @matricula
+END
+exec insert_funcionario_2 @matricula = 19550943, @nome = 'Mario da Cruz', @salario =
+3900,
+@departamento = 'RH', @cargo = 'Recrutador'
+select * from funcionario
+----------------------------------Exercicio3--------------------------------
+create procedure insert_bonus_gerente
+ @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento
+varchar(40), @cargo
+varchar(40)
+AS
+DECLARE @matricula_cod int, @bonus numeric(12,2)
+set @matricula_cod = 0 
+SELECT @matricula_cod = MATRICULA FROM FUNCIONARIO WHERE MATRICULA = @matricula
+IF @cargo = 'GERENTE'
+BEGIN
+UPDATE FUNCIONARIO
+SET SALARIO = SALARIO * 1.1
+WHERE MATRICULA = @matricula
+END
+ELSE IF @cargo <> 'GERENTE'
+BEGIN
+IF @matricula_cod = 0
+ BEGIN
+ INSERT INTO FUNCIONARIO values(@matricula, @nome, @salario+@bonus,
+@departamento, @cargo)
+ END
+ELSE
+ BEGIN
+ UPDATE FUNCIONARIO
+ SET NOME = @nome, SALARIO = @salario, DEPARTAMENTO = @departamento,CARGO =
+@cargo
+ WHERE MATRICULA = @matricula
+END
+END
+SELECT * FROM FUNCIONARIO
+exec insert_bonus_gerente @matricula = 19550943, @nome = 'Ana Paula', @salario =
+1900,
+@departamento = 'RH', @cargo = 'GERENTE'
+----------------------------Exercicio 4------------------------------
+create table PRODUTO
+(
+ CODIGO int not null primary key,
+ NOME varchar(30),
+ QUANTIDADE int,
+ VALOR numeric(12,2)
+)
+create procedure sp_insert_produtos
+ @codigo int, @nome varchar(30), @quantidade int, @valor numeric(12,2)
+AS
+DECLARE @produto_cod int
+set @produto_cod = 0
+SELECT @produto_cod = CODIGO FROM PRODUTO WHERE CODIGO = @codigo
+IF @produto_cod = 0
+BEGIN
+INSERT INTO PRODUTO values(@codigo, @nome, @quantidade, @valor)
+END
+ELSE
+BEGIN
+UPDATE PRODUTO
+SET QUANTIDADE = @quantidade
+WHERE CODIGO = @codigo
+END
+--execução
+exec sp_insert_produtos @codigo = 1450, @nome = 'Mamao', @quantidade = 55, @valor =
+3.20 
+SELECT * FROM PRODUTO
+--------------------------------Exercicio 5-----------------------------------------
+---
+create table NF_PRODUTO
+(
+QUANTIDADE int,
+NF_CODIGO int,
+NF_NUMERO int,
+CONSTRAINT FK_Codigo FOREIGN KEY (NF_CODIGO) REFERENCES PRODUTO (CODIGO),
+CONSTRAINT FK_Numero FOREIGN KEY (NF_NUMERO) REFERENCES NOTA_FISCAL (NUMERO)
+)
+create table PRODUTO
+(
+ CODIGO int not null primary key,
+ NOME varchar(50),
+ QUANTIDADE int,
+ VALOR numeric(12,2)
+)
+create table NOTA_FISCAL
+(
+ NUMERO int not null primary key,
+DATA date
+)
+create procedure SP_INSERT_NF_PRODUTO
+ @quantidade int, @codigo int, @numero int
+AS
+DECLARE @estoque int, @vendidos int
+SELECT @estoque = P.QUANTIDADE,@vendidos = NP.QUANTIDADE FROM PRODUTO P,
+NF_PRODUTO NP
+WHERE P.CODIGO = @codigo
+AND NP.NF_NUMERO = @numero
+AND P.CODIGO = NP.NF_CODIGO -- Relacionamento
+IF @vendidos < @estoque
+BEGIN
+PRINT 'Inserção cancelada por que numero de vendas esta menor que estoque'
+END
+ELSE
+BEGIN
+INSERT INTO NF_PRODUTO VALUES(@quantidade, @codigo, @numero)
+END
+SELECT * FROM PRODUTO
+SELECT * FROM NF_PRODUTO
+SELECT * FROM NOTA_FISCAL
+INSERT INTO NOTA_FISCAL VALUES(4545, '20220322')
+INSERT INTO NF_PRODUTO VALUES(10, 1450, 4545)
+---Execução
+exec SP_INSERT_NF_PRODUTO @quantidade = 2, @codigo = 1450, @numero = 4545
+---------------------------------------------------------------------------------
+
+/* 1. Exercícios de Stored Procedures 240322
+1) Desenvolva uma procedure em PL/SQL que faça a verificação na tabela aluno
+se o mesmo está aprovado (maior igual a 7), recuperação (maior que 4 e menor
+que 7) e reprovado (menor que 4). Crie a tabela com os seguintes campos
+código, nome, nota1, nota2, coddis, mensalidade, qtdefalta) */
+
+create table ALUNO
+( CODIGO int not null primary key,
+ NOME varchar(30),
+ NOTA1 numeric(12,2),
+ NOTA2 numeric(12,2),
+ CODDIS int,
+ MENSALIDADE numeric(12,2),
+ QTDEFALTA int
+)
+create procedure sp_verifica
+@nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int,
+@mensalidade numeric(12,2), @qtdefalta int
+
+AS
+SELECT @nome = CODIGO FROM PRODUTO WHERE CODIGO = @codigo
+IF @matricula_cod = 0
+BEGIN
+INSERT INTO FUNCIONARIO values(@matricula, @nome, @salario, @departamento, @cargo)
+END
+ELSE
+BEGIN
+UPDATE FUNCIONARIO
+SET NOME = @nome, SALARIO = @salario, DEPARTAMENTO = @departamento, CARGO = @cargo
+WHERE MATRICULA = @matricula
+END
+exec insert_funcionario_2 @matricula = 19550943, @nome = 'Mario da Cruz', @salario =
+3900,
+@departamento = 'RH', @cargo = 'Recrutador'
+select * from funcionario
+
+/* 2 Crie uma procedure em PL/SQL para inserir um aluno na tabela apenas se a
+quantidade de alunos for menor que 10 senão apresentar a quantidade e
+mensagem turma lotada. */
+
+
+
+
+/* 3) Faça uma procedure em PL/SQL que apresente a quantidade de alunos
+aprovados, em recuperação e aprovados. */
+
+
+
+
+/* 4) Crie a tabela disciplina (código, nome, cargaho) e relacione com a tabela aluno
+e insira os dados na tabela disciplina e no campo da tabela aluno e elabore uma
+procedure em PL/SQL que apresente os seguintes valores:
+a) Para a disciplina Matemática mensalidade mais 10%
+b) Para Banco de dados mensalidade menos 20 %
+c) Para Programação mensalidade mais 15% */
+
+
+
+
+/* 5 Desenvolva uma procedure em PL/SQL que passe por parâmetro o código do
+aluno e se não encontrar mostrar a mensagem aluno não cadastrado, se
+encontrar mostrar o nome a media e a disciplina cursada. */
