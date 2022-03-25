@@ -845,24 +845,24 @@ SELECT * FROM funcionario
 do funcionário for GERENTE o salário do mesmo deve ser acrescido de um bônus de
 10% e se o funcionário já existir alterar os dados devem ser alterados na tabela. */
 
-CREATE PROCEDURE sp_inser3
-@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+--CREATE PROCEDURE sp_inser3 @matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
 
---ALTER PROCEDURE sp_inser3
---@matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
+ALTER PROCEDURE sp_inser3 @matricula int, @nome varchar(100), @salario numeric(20,4), @departamento varchar(100), @cargo varchar(100)
 
 AS
 
-IF EXISTS (SELECT cargo FROM funcionario WHERE cargo = @cargo)
+IF EXISTS (SELECT cargo FROM funcionario WHERE cargo = 'Gerente')
 	BEGIN
-		UPDATE funcionario set salario = (salario + (salario * 0.1))
+		UPDATE funcionario set salario = (@salario + (@salario * 0.1)) where cargo = 'Gerente'
 	END
-ELSE IF EXISTS (SELECT nome FROM funcionario WHERE nome = @nome)
+ELSE IF EXISTS (SELECT matricula FROM funcionario WHERE matricula = @matricula)
 	BEGIN
-		INSERT funcionario (matricula, nome, salario, departamento, cargo) values (@matricula, @nome, @salario, @departamento, @cargo)
+		UPDATE FUNCIONARIO 
+		SET MATRICULA = @matricula, NOME = @nome, SALARIO = @salario, DEPARTAMENTO = @departamento, CARGO = @cargo
+		WHERE MATRICULA = @matricula
 	END
 
-EXEC sp_inser3 @matricula = 4, @nome='Lucas', @salario = 1500.00, @departamento = 'TI', @cargo = 'Gerente'
+EXEC sp_inser3 @matricula = 123, @nome='Ana Paula', @salario = 1000.00, @departamento = 'Recursos Humanos', @cargo = 'Jovem Aprendiz'
 
 SELECT * FROM funcionario
 
@@ -971,7 +971,7 @@ UPDATE FUNCIONARIO
 SET NOME = @nome, SALARIO = @salario, DEPARTAMENTO = @departamento, CARGO = @cargo
 WHERE MATRICULA = @matricula
 END
-exec insert_funcionario_2 @matricula = 19550943, @nome = 'Mario da Cruz', @salario =
+exec insert_funcionario_2 @matricula = 19550943, @nome = 'Marta', @salario =
 3900,
 @departamento = 'RH', @cargo = 'Recrutador'
 select * from funcionario
@@ -979,7 +979,7 @@ select * from funcionario
 /* 3. Criar procedure para inserir dados na tabela FUNCIONARIO do exercício 1. Se o cargo
 do funcionário for GERENTE o salário do mesmo deve ser acrescido de um bônus de
 10% e se o funcionário já existir alterar os dados devem ser alterados na tabela. */
- @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento
+CREATE PROCEDURE @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento
 varchar(40), @cargo
 varchar(40)
 AS
@@ -1123,6 +1123,7 @@ INSERT INTO ALUNOS values(7,'Larissa', 5, 2, 1, 100.90, 4)
 INSERT INTO ALUNOS values(8,'Daniela', 2, 1, 8, 1100.50, 3)
 INSERT INTO ALUNOS values(9,'Júlio', 9, 8, 4, 400.00, 8)
 INSERT INTO ALUNOS values(10,'César', 5, 4, 3, 900.00, 0)
+
 SELECT * FROM ALUNOS     
 TRUNCATE TABLE ALUNOS
 
@@ -1133,6 +1134,7 @@ ALTER PROCEDURE sp_verifica @codigo int
 AS
 
 DECLARE @MEDIA numeric(12,2)
+
 SET @MEDIA = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
 
 IF @MEDIA >=  7
@@ -1167,11 +1169,11 @@ SET @quantidade = (SELECT COUNT(*) FROM ALUNOS)
 
 IF @quantidade < 10
 BEGIN
-	INSERT INTO ALUNOS (codigo, nome, nota1, nota2, coddis, mensalidade, qtdefalta) values (@codigo, @nome, @nota1, @nota2, @coddis, @mensalidade, @qtdefalta)
+	INSERT INTO ALUNOS values (@codigo, @nome, @nota1, @nota2, @coddis, @mensalidade, @qtdefalta)
 END
 ELSE
 BEGIN
-	SELECT 'A quantidade de alunos dessa turma é ' + CONVERT(CHAR(5), @quantidade) + '- Turma lotada' AS 'Situação da turma'
+	SELECT 'Total de alunos: ' + CONVERT(CHAR(5), @quantidade) + '- Turma lotada' AS 'Situação da turma'
 END
 
 EXEC sp_insert_aluno 11, 'Gabriela', 6, 6, 2, 320.00, 7 
@@ -1186,23 +1188,24 @@ ALTER PROCEDURE sp_situacao @codigo int
 AS
 
 DECLARE @MEDIA numeric(12,2), @aprovados int, @recuperacao int, @reprovados int
+
 SET @MEDIA = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
 SET @aprovados = 0
 SET @recuperacao = 0
 SET @reprovados = 0
 
 IF @MEDIA >=  7
-BEGIN
-	SET @aprovados = @aprovados + 1
-END
+	BEGIN
+		SET @aprovados = @aprovados + 1
+	END
 ELSE IF @MEDIA > 4 and @MEDIA < 7
-BEGIN
-	SET @recuperacao = @recuperacao + 1
-END
+	BEGIN
+		SET @recuperacao = @recuperacao + 1
+	END
 ELSE
-BEGIN
-	SET @reprovados = @reprovados + 1
-END
+	BEGIN
+		SET @reprovados = @reprovados + 1
+	END
 
 SELECT @aprovados as 'Aprovados', @recuperacao as 'Recuperação', @reprovados as 'Reprovados'
 
@@ -1212,8 +1215,6 @@ EXEC sp_situacao 1
 --SET @aprovados = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
 --SET @recuperacao = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
 --SET @reprovados = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
-
-
 
 ---------------------------------------------------------------------------------
 
@@ -1230,41 +1231,57 @@ CODIGO int,
 NOME varchar (50),
 CARGA varchar (50),
 CONSTRAINT FK_CODIGO FOREIGN KEY (CODIGO) REFERENCES ALUNOS (CODIGO),
+MENSALIDADE numeric (12,2)
 )
+
+INSERT INTO DISCIPLINA values(1,'Matemática', 50, 1000.00)
+INSERT INTO DISCIPLINA values(2,'Banco de dados', 60, 1000.00) 
+INSERT INTO DISCIPLINA values(3,'Programação', 48, 1000.00)
+INSERT INTO DISCIPLINA values(4,'Programação', 35, 1000.00)
+INSERT INTO DISCIPLINA values(5,'Português', 30, 1000.00)
+INSERT INTO DISCIPLINA values(6,'Ciências', 48, 1000.00)
+INSERT INTO DISCIPLINA values(7,'Física', 50, 1000.00) 
+INSERT INTO DISCIPLINA values(8,'Matemática', 35, 1000.00)
+INSERT INTO DISCIPLINA values(9,'Banco de dados', 30, 1000.00)
+INSERT INTO DISCIPLINA values(10,'Química', 15, 1000.00)
+
 SELECT * FROM DISCIPLINA
 DROP TABLE DISCIPLINA
 
---CREATE PROCEDURE sp_valores @codigo int, @nome varchar(50), @carga varchar(50), @mensalidade numeric(12,2)
-ALTER PROCEDURE sp_valores @codigo int, @nome varchar(50), @carga varchar(50)
+--CREATE PROCEDURE sp_valores @codigo int
+ALTER PROCEDURE sp_valores @codigo int
+
 AS
-INSERT INTO DISCIPLINA (CODIGO, NOME, CARGA) VALUES (@codigo, @nome, @carga)
 
-EXEC sp_valores 1, Matemática, 10, 1000.00
+DECLARE @disciplina varchar(100), @mensalidade numeric(12,2)
 
-SELECT * FROM DISCIPLINA
-TRUNCATE TABLE DISCIPLINA
-
-DECLARE @disciplina varchar(100)
-SET @disciplina = (SELECT NOME FROM DISCIPLINA)
+SET @disciplina = (SELECT NOME FROM DISCIPLINA WHERE CODIGO = @codigo)
+SET @mensalidade = (SELECT MENSALIDADE FROM DISCIPLINA WHERE CODIGO = @codigo)
 
 IF (@disciplina = 'Matemática')
 BEGIN
 	SET @mensalidade = @mensalidade + (@mensalidade * 0.1)
+	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
 END
-IF (@disciplina = 'Banco de dados')
+ELSE IF (@disciplina = 'Banco de dados')
 BEGIN
 	SET @mensalidade = @mensalidade + (@mensalidade * 0.2)
+	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
 END
-IF (@disciplina = 'Programação')
+ELSE IF (@disciplina = 'Programação')
 BEGIN
 	SET @mensalidade = @mensalidade + (@mensalidade * 0.15)
+	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
+END
+ELSE
+BEGIN
+	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
 END
 
+EXEC sp_valores 1
 
-
-
-
-
+SELECT * FROM DISCIPLINA
+TRUNCATE TABLE DISCIPLINA
 
 ---------------------------------------------------------------------------------
 
@@ -1272,24 +1289,62 @@ END
 aluno e se não encontrar mostrar a mensagem aluno não cadastrado, se
 encontrar mostrar o nome a media e a disciplina cursada. */
 
-CREATE PROCEDURE sp_codigo_aluno @codigo int
+--CREATE PROCEDURE sp_codigo_aluno @codigo int
 ALTER PROCEDURE sp_codigo_aluno @codigo int
+
 AS
+
+DECLARE @media numeric(12,2), @disciplina varchar (100), @nome varchar(50)
+
+SET @media = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
+SET @disciplina = (SELECT NOME FROM DISCIPLINA WHERE CODIGO = @codigo)
+SET @nome = (SELECT NOME FROM ALUNOS WHERE CODIGO = @codigo)
+
 IF EXISTS (SELECT CODIGO FROM ALUNOS WHERE CODIGO = @codigo)
+
 BEGIN
-	SELECT NOME FROM ALUNOS WHERE CODIGO = @codigo
+	SELECT @nome AS Nome
+	SELECT @media AS Média
+	SELECT @disciplina AS Disciplina
 END
 ELSE
-BEGIN
-	SELECT 'Aluno não encontrado' AS Aluno
-END
+	BEGIN
+		SELECT 'Aluno não encontrado' AS Aluno
+	END
 
-EXEC sp_codigo_aluno 7
-
-
-
-
-
-
+EXEC sp_codigo_aluno 1
 
 ---------------------------------------------------------------------------------
+
+create table FUNCIONARIO
+( MATRICULA int not null primary key,
+ NOME varchar(30),
+ SALARIO numeric(12,2),
+ DEPARTAMENTO varchar(40),
+ CARGO varchar(40)
+)
+/* 2. Criar procedure para inserir dados na tabela FUNCIONARIO do exercício 1. Se o
+funcionário já existir alterar os dados do mesmo. */
+
+--CREATE PROCEDURE sp_inserir @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento varchar(40), @cargo varchar (40)
+ALTER PROCEDURE sp_inserir @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento varchar(40), @cargo varchar (40)
+
+AS
+
+DECLARE @cod_funcionario int
+
+SET @cod_funcionario = (SELECT MATRICULA FROM FUNCIONARIO WHERE MATRICULA = @matricula)
+
+IF @matricula = @cod_funcionario
+	BEGIN
+		UPDATE FUNCIONARIO SET MATRICULA = @matricula, NOME = @nome, SALARIO = @salario, DEPARTAMENTO = @departamento, CARGO = @cargo
+		WHERE @matricula = MATRICULA
+	END
+ELSE
+	BEGIN
+		INSERT INTO FUNCIONARIO VALUES (@matricula, @nome, @salario, @departamento, @cargo)
+	END
+
+EXEC sp_inserir 222, 'Lucas', 1500.00, 'TI', 'Estagiário'
+
+SELECT * FROM FUNCIONARIO
