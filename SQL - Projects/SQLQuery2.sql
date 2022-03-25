@@ -1180,6 +1180,8 @@ EXEC sp_insert_aluno 11, 'Gabriela', 6, 6, 2, 320.00, 7
 
 SELECT * FROM ALUNOS
 
+------------------------------------------------------------------------------
+
 /* 3) Faça uma procedure em PL/SQL que apresente a quantidade de alunos
 aprovados, em recuperação e reprovados. */
 
