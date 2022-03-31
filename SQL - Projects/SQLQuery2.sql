@@ -1127,9 +1127,9 @@ INSERT INTO ALUNOS values(10,'César', 5, 4, 3, 900.00, 0)
 SELECT * FROM ALUNOS     
 TRUNCATE TABLE ALUNOS
 
---CREATE PROCEDURE sp_verifica @codigo int
+CREATE PROCEDURE sp_verifica @codigo int
 
-ALTER PROCEDURE sp_verifica @codigo int
+--ALTER PROCEDURE sp_verifica @codigo int
 
 AS
 
@@ -1160,8 +1160,8 @@ SELECT * FROM ALUNOS
 quantidade de alunos for menor que 10 senão apresentar a quantidade e
 mensagem turma lotada. */
 
---CREATE PROCEDURE sp_insert_aluno @codigo int, @nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int, @mensalidade numeric(12,2), @qtdefalta int
-ALTER PROCEDURE sp_insert_aluno @codigo int, @nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int, @mensalidade numeric(12,2), @qtdefalta int
+CREATE PROCEDURE sp_insert_aluno @codigo int, @nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int, @mensalidade numeric(12,2), @qtdefalta int
+--ALTER PROCEDURE sp_insert_aluno @codigo int, @nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int, @mensalidade numeric(12,2), @qtdefalta int
 AS
 
 DECLARE @quantidade int
@@ -1186,15 +1186,24 @@ SELECT * FROM ALUNOS
 aprovados, em recuperação e reprovados. */
 
 --CREATE PROCEDURE sp_situacao @codigo int
-ALTER PROCEDURE sp_situacao @codigo int
+ALTER PROCEDURE sp_situacao 
 AS
 
 DECLARE @MEDIA numeric(12,2), @aprovados int, @recuperacao int, @reprovados int
 
-SET @MEDIA = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
-SET @aprovados = 0
-SET @recuperacao = 0
-SET @reprovados = 0
+--SET @MEDIA = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
+SET @aprovados = (SELECT COUNT(*) FROM ALUNOS WHERE ((NOTA1 + NOTA2) / 2) >= 7)
+SET @recuperacao = (SELECT COUNT(*) FROM ALUNOS WHERE ((NOTA1 + NOTA2) / 2) >= 4 AND  ((NOTA1 + NOTA2) / 2) < 7)
+SET @reprovados = (SELECT COUNT(*) FROM ALUNOS WHERE ((NOTA1 + NOTA2) / 2) < 4)
+
+SELECT @aprovados AS 'Total de aprovados'
+SELECT @recuperacao AS 'Total em recuperação'
+SELECT @reprovados AS 'Total de reprovados'
+
+EXEC sp_situacao 
+
+SELECT * FROM ALUNOS
+
 
 IF @MEDIA >=  7
 	BEGIN
@@ -1250,8 +1259,8 @@ INSERT INTO DISCIPLINA values(10,'Química', 15, 1000.00)
 SELECT * FROM DISCIPLINA
 DROP TABLE DISCIPLINA
 
---CREATE PROCEDURE sp_valores @codigo int
-ALTER PROCEDURE sp_valores @codigo int
+CREATE PROCEDURE sp_valores @codigo int
+--ALTER PROCEDURE sp_valores @codigo int
 
 AS
 
@@ -1291,8 +1300,8 @@ TRUNCATE TABLE DISCIPLINA
 aluno e se não encontrar mostrar a mensagem aluno não cadastrado, se
 encontrar mostrar o nome a media e a disciplina cursada. */
 
---CREATE PROCEDURE sp_codigo_aluno @codigo int
-ALTER PROCEDURE sp_codigo_aluno @codigo int
+CREATE PROCEDURE sp_codigo_aluno @codigo int
+--ALTER PROCEDURE sp_codigo_aluno @codigo int
 
 AS
 
@@ -1328,8 +1337,8 @@ create table FUNCIONARIO
 /* 2. Criar procedure para inserir dados na tabela FUNCIONARIO do exercício 1. Se o
 funcionário já existir alterar os dados do mesmo. */
 
---CREATE PROCEDURE sp_inserir @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento varchar(40), @cargo varchar (40)
-ALTER PROCEDURE sp_inserir @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento varchar(40), @cargo varchar (40)
+CREATE PROCEDURE sp_inserir @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento varchar(40), @cargo varchar (40)
+--ALTER PROCEDURE sp_inserir @matricula int, @nome varchar(30), @salario numeric(12,2), @departamento varchar(40), @cargo varchar (40)
 
 AS
 
