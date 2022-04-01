@@ -1531,13 +1531,12 @@ AS
 
 DECLARE @email varchar(50), @aluno_mensalidade numeric(12, 2)
 SET @email = 0
-SET @aluno_mensalidade = (SELECT MENSALIDADE FROM ALUNOS WHERE CODIGO = 1)
+SET @aluno_mensalidade = (SELECT MENSALIDADE FROM ALUNOS WHERE CODIGO = @codigo)
 
 IF @aluno_mensalidade > 500
 	BEGIN
-		INSERT INTO ALUNOS VALUES (@codigo, @nome, @nota1, @nota2, @coddis, @mensalidade, @qtdefalta)
-		--UPDATE ALUNOS SET @email = (SUBSTRING(@nome, 1, 3) + 'unicesumar.edu.br') WHERE CODIGO = @codigo
-		print 'something'
+		INSERT INTO ALUNOS VALUES (@codigo, @nome, @nota1, @nota2, @coddis, @mensalidade, @qtdefalta, @email)
+		UPDATE ALUNOS SET @email = (SUBSTRING(@nome, 1, 3) + 'unicesumar.edu.br') WHERE CODIGO = @codigo
 	END
 
 EXEC sp_email 1, Lucas, 10, 8, 1, 1000.00, 2
