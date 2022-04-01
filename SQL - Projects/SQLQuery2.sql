@@ -1359,3 +1359,122 @@ ELSE
 EXEC sp_inserir 222, 'Lucas', 1500.00, 'TI', 'Estagiário'
 
 SELECT * FROM FUNCIONARIO
+
+---------------------------------------------------------------------------------
+
+-- EXERCICIOS DE STORED PROCEDURE 310322
+
+--1) Crie um stored procedure em PL/SQL que passe por parâmetro o código da
+--disciplina e mostre a qtde de alunos e a soma das mensalidades.
+
+CREATE TABLE DISCIPLINA
+(
+CODIGO int PRIMARY KEY,
+NOME varchar (50),
+CARGA varchar (50),
+FK_CODIGO int FOREIGN KEY REFERENCES ALUNOS (CODIGO),
+MENSALIDADE numeric (12,2)
+)
+
+INSERT INTO DISCIPLINA values(1,'Matemática', 50, 1, 1000.00)
+INSERT INTO DISCIPLINA values(2,'Banco de dados', 60, 2, 1000.00) 
+INSERT INTO DISCIPLINA values(3,'Programação', 48, 3, 1000.00)
+INSERT INTO DISCIPLINA values(4,'Programação', 35, 4, 1000.00)
+INSERT INTO DISCIPLINA values(5,'Português', 30, 5, 1000.00)
+INSERT INTO DISCIPLINA values(6,'Ciências', 48, 6, 1000.00)
+INSERT INTO DISCIPLINA values(7,'Física', 50, 7, 1000.00) 
+INSERT INTO DISCIPLINA values(8,'Matemática', 35, 8, 1000.00)
+INSERT INTO DISCIPLINA values(9,'Banco de dados', 30, 9, 1000.00)
+INSERT INTO DISCIPLINA values(10,'Química', 15, 10, 1000.00)
+
+SELECT * FROM DISCIPLINA
+DROP TABLE DISCIPLINA
+
+CREATE TABLE ALUNOS
+( CODIGO int primary key,
+ NOME varchar(30),
+ NOTA1 numeric(12,2),
+ NOTA2 numeric(12,2),
+ CODDIS int,
+ MENSALIDADE numeric(12,2),
+ QTDEFALTA int
+)
+
+SELECT * FROM ALUNOS
+DROP TABLE ALUNOS
+
+INSERT INTO ALUNOS values(1,'José', 10.2, 5.5, 2, 550.50, 6)
+INSERT INTO ALUNOS values(2,'Lucas', 6, 4, 1, 1000.50, 4) 
+INSERT INTO ALUNOS values(3,'Maria', 8, 3, 7, 320.50, 0)
+INSERT INTO ALUNOS values(4,'João', 2, 2, 3, 300.00, 1)
+INSERT INTO ALUNOS values(5,'Josélia', 4, 4, 2, 600.00, 3)
+INSERT INTO ALUNOS values(6,'Pedro', 10, 9.6, 2, 500.00, 5)
+INSERT INTO ALUNOS values(7,'Larissa', 5, 2, 1, 100.90, 4) 
+INSERT INTO ALUNOS values(8,'Daniela', 2, 1, 8, 1100.50, 3)
+INSERT INTO ALUNOS values(9,'Júlio', 9, 8, 4, 400.00, 8)
+INSERT INTO ALUNOS values(10,'César', 5, 4, 3, 900.00, 0)
+
+SELECT * FROM ALUNOS     
+
+--CREATE PROCEDURE sp_mostra_disciplina @codigo int
+ALTER PROCEDURE sp_mostra_disciplina @codigo int
+
+AS
+
+DECLARE @total int, @soma int
+
+SET @total = (SELECT COUNT(*) FROM DISCIPLINA d
+INNER JOIN ALUNOS a
+on a.CODIGO = d.FK_CODIGO
+WHERE a.CODIGO = @codigo)
+
+SET @soma = (SELECT SUM(a.MENSALIDADE) FROM DISCIPLINA d 
+INNER JOIN ALUNOS a
+on a.CODIGO = d.fk_CODIGO
+WHERE a.CODIGO = @codigo)
+
+SELECT @total as 'Quantidade de alunos'
+SELECT @soma as 'Soma das mensalidades'
+
+EXEC sp_mostra_disciplina 1
+
+SELECT * FROM DISCIPLINA 
+
+--2) Elabore uma procedure em PL/SQL que passe por parâmetro um código de
+--aluno e verifique se está aprovado, recuperação ou reprovado, também está
+--reprovado de a qtde de faltas for maior 3.
+
+
+
+
+--3) Desenvolva uma procedure em PL/SQL que passe por parâmetro um código
+--de aluno e atualize a mensalidade em 20% caso esteja reprovado, 10% para
+--recuperação e um desconto de 30% se aprovado.
+
+
+
+
+--4) Faça uma procedure em PL/SQL que receba por parâmetro um código de
+--aluno e atualize a mensalidade em percentual, conforme a quantidade de faltas,
+--ou seja, se 4 faltas aumentar em 4% a mensalidade do aluno.
+
+
+
+
+
+--5) Elabore uma procedure em PL/SQL que verifique se o aluno tem mensalidade
+--maior que 500 se sim adicione um novo campo email varchar(50) na tabela aluno
+--e atualizar o email com as 3 primeiras letras do nome mais @unicesumar.edu.br
+--a todos os alunos.
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------
+
+
+
