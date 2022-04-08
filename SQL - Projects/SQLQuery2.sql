@@ -1150,7 +1150,7 @@ BEGIN
 	PRINT 'Aluno Reprovado - Média: ' + CONVERT(CHAR(5), @MEDIA)
 END
 
-EXEC sp_verifica 2
+EXEC sp_verifica 1
 
 SELECT * FROM ALUNOS
 
@@ -1185,8 +1185,8 @@ SELECT * FROM ALUNOS
 /* 3) Faça uma procedure em PL/SQL que apresente a quantidade de alunos
 aprovados, em recuperação e reprovados. */
 
---CREATE PROCEDURE sp_situacao @codigo int
-ALTER PROCEDURE sp_situacao 
+CREATE PROCEDURE sp_situation 
+--ALTER PROCEDURE sp_situation
 AS
 
 DECLARE @MEDIA numeric(12,2), @aprovados int, @recuperacao int, @reprovados int
@@ -1200,32 +1200,7 @@ SELECT @aprovados AS 'Total de aprovados'
 SELECT @recuperacao AS 'Total em recuperação'
 SELECT @reprovados AS 'Total de reprovados'
 
-EXEC sp_situacao 
-
-SELECT * FROM ALUNOS
-
-
-IF @MEDIA >=  7
-	BEGIN
-		SET @aprovados = @aprovados + 1
-	END
-ELSE IF @MEDIA > 4 and @MEDIA < 7
-	BEGIN
-		SET @recuperacao = @recuperacao + 1
-	END
-ELSE
-	BEGIN
-		SET @reprovados = @reprovados + 1
-	END
-
-SELECT @aprovados as 'Aprovados', @recuperacao as 'Recuperação', @reprovados as 'Reprovados'
-
-EXEC sp_situacao 1
-
---DECLARE @aprovados int, @recuperacao int, @reprovados int
---SET @aprovados = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
---SET @recuperacao = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
---SET @reprovados = (select ((NOTA1 + NOTA2)/2) FROM ALUNOS WHERE CODIGO = @codigo)
+EXEC sp_situation 
 
 ---------------------------------------------------------------------------------
 
@@ -1240,59 +1215,88 @@ CREATE TABLE DISCIPLINA
 (
 CODIGO int,
 NOME varchar (50),
-CARGA varchar (50),
-CONSTRAINT FK_CODIGO FOREIGN KEY (CODIGO) REFERENCES ALUNOS (CODIGO),
-MENSALIDADE numeric (12,2)
+CARGA int
 )
 
-INSERT INTO DISCIPLINA values(1,'Matemática', 50, 1000.00)
-INSERT INTO DISCIPLINA values(2,'Banco de dados', 60, 1000.00) 
-INSERT INTO DISCIPLINA values(3,'Programação', 48, 1000.00)
-INSERT INTO DISCIPLINA values(4,'Programação', 35, 1000.00)
-INSERT INTO DISCIPLINA values(5,'Português', 30, 1000.00)
-INSERT INTO DISCIPLINA values(6,'Ciências', 48, 1000.00)
-INSERT INTO DISCIPLINA values(7,'Física', 50, 1000.00) 
-INSERT INTO DISCIPLINA values(8,'Matemática', 35, 1000.00)
-INSERT INTO DISCIPLINA values(9,'Banco de dados', 30, 1000.00)
-INSERT INTO DISCIPLINA values(10,'Química', 15, 1000.00)
+INSERT INTO DISCIPLINA values(1,'Matemática', 50)
+INSERT INTO DISCIPLINA values(2,'Banco de dados', 60) 
+INSERT INTO DISCIPLINA values(3,'Programação', 48)
+INSERT INTO DISCIPLINA values(4,'Programação', 35)
+INSERT INTO DISCIPLINA values(5,'Português', 30)
+INSERT INTO DISCIPLINA values(6,'Ciências', 48)
+INSERT INTO DISCIPLINA values(7,'Física', 50) 
+INSERT INTO DISCIPLINA values(8,'Matemática', 35)
+INSERT INTO DISCIPLINA values(9,'Banco de dados', 30)
+INSERT INTO DISCIPLINA values(10,'Química', 15)
 
 SELECT * FROM DISCIPLINA
 DROP TABLE DISCIPLINA
 
-CREATE PROCEDURE sp_valores @codigo int
+--CREATE PROCEDURE sp_disci @disci int
+ALTER PROCEDURE sp_disci @disci int
+
+as
+
+if @disci = 1 -- Matemática
+begin
+	SELECT a.nome, d.nome, a.mensalidade * 1.1 FROM alunos a
+	INNER JOIN disciplina d
+	on a.coddis = d.codigo
+	where a.coddis = @disci
+end
+
+else if @disci = 2 -- Banco de Dados
+begin
+	SELECT a.nome, d.nome, a.mensalidade * 0.8 FROM alunos a
+	INNER JOIN disciplina d
+	on a.coddis = d.codigo
+	where a.coddis = @disci
+end
+
+else if @disci = 3 -- Programação
+begin
+	SELECT a.nome, d.nome, a.mensalidade * 1.15 FROM alunos a
+	INNER JOIN disciplina d
+	on a.coddis = d.codigo
+	where a.coddis = @disci
+end
+
+EXEC sp_disci 3
+
+----CREATE PROCEDURE sp_valores @codigo int
 --ALTER PROCEDURE sp_valores @codigo int
 
-AS
+--AS
 
-DECLARE @disciplina varchar(100), @mensalidade numeric(12,2)
+--DECLARE @disciplina varchar(100), @mensalidade numeric(12,2)
 
-SET @disciplina = (SELECT NOME FROM DISCIPLINA WHERE CODIGO = @codigo)
-SET @mensalidade = (SELECT MENSALIDADE FROM DISCIPLINA WHERE CODIGO = @codigo)
+--SET @disciplina = (SELECT NOME FROM DISCIPLINA WHERE CODIGO = @codigo)
+--SET @mensalidade = (SELECT MENSALIDADE FROM DISCIPLINA WHERE CODIGO = @codigo)
 
-IF (@disciplina = 'Matemática')
-BEGIN
-	SET @mensalidade = @mensalidade + (@mensalidade * 0.1)
-	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
-END
-ELSE IF (@disciplina = 'Banco de dados')
-BEGIN
-	SET @mensalidade = @mensalidade + (@mensalidade * 0.2)
-	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
-END
-ELSE IF (@disciplina = 'Programação')
-BEGIN
-	SET @mensalidade = @mensalidade + (@mensalidade * 0.15)
-	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
-END
-ELSE
-BEGIN
-	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
-END
+--IF (@disciplina = 'Matemática')
+--BEGIN
+--	SET @mensalidade = @mensalidade + (@mensalidade * 0.1)
+--	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
+--END
+--ELSE IF (@disciplina = 'Banco de dados')
+--BEGIN
+--	SET @mensalidade = @mensalidade + (@mensalidade * 0.2)
+--	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
+--END
+--ELSE IF (@disciplina = 'Programação')
+--BEGIN
+--	SET @mensalidade = @mensalidade + (@mensalidade * 0.15)
+--	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
+--END
+--ELSE
+--BEGIN
+--	SELECT 'Disciplina de ' + @disciplina + ': R$ ' + CONVERT(CHAR(10), @mensalidade) AS 'Preço mensalidade'
+--END
 
-EXEC sp_valores 1
+--EXEC sp_valores 3
 
-SELECT * FROM DISCIPLINA
-TRUNCATE TABLE DISCIPLINA
+--SELECT * FROM DISCIPLINA
+--TRUNCATE TABLE DISCIPLINA
 
 ---------------------------------------------------------------------------------
 
@@ -1300,32 +1304,58 @@ TRUNCATE TABLE DISCIPLINA
 aluno e se não encontrar mostrar a mensagem aluno não cadastrado, se
 encontrar mostrar o nome a media e a disciplina cursada. */
 
-CREATE PROCEDURE sp_codigo_aluno @codigo int
---ALTER PROCEDURE sp_codigo_aluno @codigo int
+--CREATE PROCEDURE sp_codigo_aluno @codigo int
+ALTER PROCEDURE sp_codigo_aluno @codigo int
 
 AS
 
-DECLARE @media numeric(12,2), @disciplina varchar (100), @nome varchar(50)
+DECLARE @media numeric (12,2)
+DECLARE @disci varchar(40)
+DECLARE @nome varchar (40)
 
-SET @media = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
-SET @disciplina = (SELECT NOME FROM DISCIPLINA WHERE CODIGO = @codigo)
-SET @nome = (SELECT NOME FROM ALUNOS WHERE CODIGO = @codigo)
+set @media = (SELECT (nota1 + nota2)/2 FROM alunos 
+				where codigo = @codigo)
 
-IF EXISTS (SELECT CODIGO FROM ALUNOS WHERE CODIGO = @codigo)
+set @nome = (SELECT nome FROM alunos 
+				where codigo = @codigo)
 
-BEGIN
-	SELECT @nome AS Nome
-	SELECT @media AS Média
-	SELECT @disciplina AS Disciplina
-END
-ELSE
-	BEGIN
-		SELECT 'Aluno não encontrado' AS Aluno
-	END
+set @disci = (SELECT d.nome FROM alunos a
+				INNER JOIN disciplina d
+				on a.coddis = d.codigo
+				where a.codigo = @codigo)
 
-EXEC sp_codigo_aluno 1
+if @media >= 0 -- Pra ver se tem algum registro
+begin
+	select @nome as Nome
+	select @disci as Disciplina
+	select @media as Média
+end
+
+exec sp_codigo_aluno 3
+
+
+--DECLARE @media numeric(12,2), @disciplina varchar (100), @nome varchar(50)
+
+--SET @media = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo)
+--SET @disciplina = (SELECT NOME FROM DISCIPLINA WHERE CODIGO = @codigo)
+--SET @nome = (SELECT NOME FROM ALUNOS WHERE CODIGO = @codigo)
+
+--IF EXISTS (SELECT CODIGO FROM ALUNOS WHERE CODIGO = @codigo)
+
+--BEGIN
+--	SELECT @nome AS Nome
+--	SELECT @media AS Média
+--	SELECT @disciplina AS Disciplina
+--END
+--ELSE
+--	BEGIN
+--		SELECT 'Aluno não encontrado' AS Aluno
+--	END
+
+--EXEC sp_codigo_aluno 2
 
 ---------------------------------------------------------------------------------
+-- REPETIDOS
 
 create table FUNCIONARIO
 ( MATRICULA int not null primary key,
@@ -1372,31 +1402,31 @@ CREATE TABLE DISCIPLINA
 CODIGO int PRIMARY KEY,
 NOME varchar (50),
 CARGA varchar (50),
-FK_CODIGO int FOREIGN KEY REFERENCES ALUNOS (CODIGO),
+FK_CODIGO int FOREIGN KEY REFERENCES ALUNOS (CODDIS),
 MENSALIDADE numeric (12,2)
 )
 
-INSERT INTO DISCIPLINA values(1,'Matemática', 50, 10, 1000.00)
-INSERT INTO DISCIPLINA values(2,'Banco de dados', 60, 2, 1000.00) 
-INSERT INTO DISCIPLINA values(3,'Programação', 48, 3, 1000.00)
-INSERT INTO DISCIPLINA values(4,'Programação', 35, 4, 1000.00)
-INSERT INTO DISCIPLINA values(5,'Português', 30, 5, 1000.00)
-INSERT INTO DISCIPLINA values(6,'Ciências', 48, 6, 1000.00)
-INSERT INTO DISCIPLINA values(7,'Física', 50, 7, 1000.00) 
-INSERT INTO DISCIPLINA values(8,'Matemática', 35, 8, 1000.00)
-INSERT INTO DISCIPLINA values(9,'Banco de dados', 30, 9, 1000.00)
-INSERT INTO DISCIPLINA values(10,'Química', 15, 10, 1000.00)
+INSERT INTO DISCIPLINA values(1,'Matemática', 50, 1, 1000.00)
+INSERT INTO DISCIPLINA values(2,'Banco de dados', 40, 2, 1000.00) 
+INSERT INTO DISCIPLINA values(3,'Programação',30, 3, 1000.00)
+INSERT INTO DISCIPLINA values(4,'Português', 20, 4, 1000.00)
+INSERT INTO DISCIPLINA values(5,'Ciências', 25, 5, 1000.00)
+INSERT INTO DISCIPLINA values(6,'Física', 45, 6, 1000.00) 
+INSERT INTO DISCIPLINA values(7,'Química', 40, 7, 1000.00)
+INSERT INTO DISCIPLINA values(8,'Biologia', 50, 8, 1000.00)
+INSERT INTO DISCIPLINA values(9,'Artes', 45, 9, 1000.00) 
+INSERT INTO DISCIPLINA values(10,'Geografia', 40, 10, 1000.00)
 
 SELECT * FROM DISCIPLINA
 DROP TABLE DISCIPLINA
 TRUNCATE TABLE DISCIPLINA
 
 CREATE TABLE ALUNOS
-( CODIGO int primary key,
+( CODIGO int,
  NOME varchar(30),
  NOTA1 numeric(12,2),
  NOTA2 numeric(12,2),
- CODDIS int,
+ CODDIS int PRIMARY KEY,
  MENSALIDADE numeric(12,2),
  QTDEFALTA int
 )
@@ -1404,16 +1434,18 @@ CREATE TABLE ALUNOS
 SELECT * FROM ALUNOS
 DROP TABLE ALUNOS
 
-INSERT INTO ALUNOS values(1,'José', 10.2, 5.5, 2, 550.50, 6)
-INSERT INTO ALUNOS values(2,'Lucas', 6, 4, 1, 1000.50, 4) 
-INSERT INTO ALUNOS values(3,'Maria', 8, 3, 7, 320.50, 0)
-INSERT INTO ALUNOS values(4,'João', 2, 2, 3, 300.00, 1)
-INSERT INTO ALUNOS values(5,'Josélia', 4, 4, 2, 600.00, 3)
-INSERT INTO ALUNOS values(6,'Pedro', 10, 9.6, 2, 500.00, 5)
-INSERT INTO ALUNOS values(7,'Larissa', 5, 2, 1, 100.90, 4) 
+INSERT INTO ALUNOS values(1,'José', 10.2, 5.5, 1, 550.50, 6)
+INSERT INTO ALUNOS values(2,'Lucas', 6, 4, 2, 1000.50, 4) 
+INSERT INTO ALUNOS values(3,'Maria', 8, 3, 3, 320.50, 0)
+INSERT INTO ALUNOS values(4,'João', 2, 2, 4, 300.00, 1)
+INSERT INTO ALUNOS values(5,'Josélia', 4, 4, 5, 600.00, 3)
+INSERT INTO ALUNOS values(6,'Pedro', 10, 9.6, 6, 500.00, 5)
+INSERT INTO ALUNOS values(7,'Larissa', 5, 2, 7, 100.90, 4) 
 INSERT INTO ALUNOS values(8,'Daniela', 2, 1, 8, 1100.50, 3)
-INSERT INTO ALUNOS values(9,'Júlio', 9, 8, 4, 400.00, 8)
-INSERT INTO ALUNOS values(10,'César', 5, 4, 3, 900.00, 0)
+INSERT INTO ALUNOS values(9,'Júlio', 9, 8, 9, 400.00, 8)
+INSERT INTO ALUNOS values(10,'César', 5, 4, 10, 900.00, 0)
+
+TRUNCATE TABLE ALUNOS
 
 SELECT * FROM ALUNOS     
 
@@ -1424,58 +1456,289 @@ AS
 
 DECLARE @total int, @soma int
 
-SET @total = (SELECT COUNT(*) FROM DISCIPLINA d
+SET @total = (SELECT COUNT(*) ALUNOS FROM DISCIPLINA d
 INNER JOIN ALUNOS a
-on a.CODIGO = d.FK_CODIGO
+on a.CODDIS = d.FK_CODIGO
 WHERE a.CODIGO = @codigo)
 
-SET @soma = (SELECT SUM(d.MENSALIDADE) FROM DISCIPLINA d 
+SET @soma = (SELECT SUM(d.MENSALIDADE) 'SOMA DAS MENSALIDADES' FROM DISCIPLINA d 
 INNER JOIN ALUNOS a
-on a.CODIGO = d.fk_CODIGO
-WHERE a.CODIGO = @codigo)
+on a.CODIGO = d.FK_CODIGO
+WHERE a.CODDIS = @codigo)
 
 SELECT @total as 'Quantidade de alunos'
 SELECT @soma as 'Soma das mensalidades'
 
-EXEC sp_mostra_disciplina 1
+EXEC sp_mostra_disciplina 2
 
-SELECT * FROM DISCIPLINA 
+SELECT * FROM DISCIPLINA
+SELECT * FROM ALUNOS
+
+---------------------------------------------------------------------------------
 
 --2) Elabore uma procedure em PL/SQL que passe por parâmetro um código de
 --aluno e verifique se está aprovado, recuperação ou reprovado, também está
---reprovado de a qtde de faltas for maior 3.
+--reprovado se a qtde de faltas for maior 3.
 
+--CREATE PROCEDURE sp_situacao_aluno @codigo_aluno int
+ALTER PROCEDURE sp_situacao_aluno @codigo_aluno int
 
+AS
 
+DECLARE @MEDIA numeric(12,2), @REPRO int
+
+SET @MEDIA = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo_aluno)
+SET @REPRO = (SELECT QTDEFALTA FROM ALUNOS WHERE CODIGO = @codigo_aluno)
+
+IF @MEDIA >=  7 and @REPRO <= 3
+BEGIN
+	PRINT 'Aluno Aprovado - Média: ' + CONVERT(CHAR(5), @MEDIA) + ' / Quantidade de faltas: ' + CONVERT(CHAR(100),@REPRO)
+END
+ELSE IF @MEDIA > 4 and @MEDIA < 7 and @REPRO <= 3
+BEGIN
+	PRINT 'Aluno em Recuperação - Média: ' + CONVERT(CHAR(5), @MEDIA) + ' / Quantidade de faltas: ' + CONVERT(CHAR(100),@REPRO)
+END
+ELSE IF @MEDIA <= 4 or @REPRO > 3
+BEGIN
+	PRINT 'Aluno Reprovado - Média: ' + CONVERT(CHAR(5), @MEDIA) + ' / Quantidade de faltas: ' + CONVERT(CHAR(100),@REPRO)
+END
+
+EXEC sp_situacao_aluno 9
+
+---------------------------------------------------------------------------------
 
 --3) Desenvolva uma procedure em PL/SQL que passe por parâmetro um código
 --de aluno e atualize a mensalidade em 20% caso esteja reprovado, 10% para
 --recuperação e um desconto de 30% se aprovado.
 
+--CREATE PROCEDURE sp_situacao_alunos @codigo_aluno int
+ALTER PROCEDURE sp_situacao_alunos @codigo_aluno int
 
+AS
 
+DECLARE @MEDIA numeric(12,2), @REPRO int, @mensalidade_aprovado numeric(12, 2), @mensalidade_recuperacao numeric(12, 2), @mensalidade_reprovado numeric(12, 2)
+
+SET @MEDIA = (SELECT ((NOTA1 + NOTA2) / 2) FROM ALUNOS WHERE CODIGO = @codigo_aluno)
+SET @REPRO = (SELECT QTDEFALTA FROM ALUNOS WHERE CODIGO = @codigo_aluno)
+SET @mensalidade_aprovado = (SELECT (MENSALIDADE  - (MENSALIDADE * 0.3)) FROM ALUNOS WHERE CODIGO = @codigo_aluno)
+SET @mensalidade_recuperacao = (SELECT (MENSALIDADE  + (MENSALIDADE * 0.1)) FROM ALUNOS WHERE CODIGO = @codigo_aluno)
+SET @mensalidade_reprovado = (SELECT (MENSALIDADE  + (MENSALIDADE * 0.2)) FROM ALUNOS WHERE CODIGO = @codigo_aluno)
+
+IF @MEDIA >=  7 and @REPRO <= 3 
+BEGIN
+	UPDATE ALUNOS SET MENSALIDADE = @mensalidade_aprovado WHERE CODIGO = @codigo_aluno
+		PRINT 'Nova mensalidade: R$ ' + CONVERT (CHAR(7), @mensalidade_aprovado) + ' / Desconto aplicado no valor de 30%'
+		PRINT 'Aluno Aprovado - Média: ' + CONVERT(CHAR(5), @MEDIA) + ' / Quantidade de faltas: ' + CONVERT(CHAR(100),@REPRO)
+END
+ELSE IF @MEDIA > 4 and @MEDIA < 7 and @REPRO <= 3
+BEGIN
+	UPDATE ALUNOS SET MENSALIDADE = @mensalidade_recuperacao WHERE CODIGO = @codigo_aluno
+		PRINT 'Nova mensalidade: R$ ' + CONVERT (CHAR(7), @mensalidade_recuperacao) + ' / Aumento aplicado no valor de 10%'
+		PRINT 'Aluno em Recuperação - Média: ' + CONVERT(CHAR(5), @MEDIA) + ' / Quantidade de faltas: ' + CONVERT(CHAR(100),@REPRO)
+END
+ELSE IF @MEDIA <= 4 or @REPRO > 3
+BEGIN
+	UPDATE ALUNOS SET MENSALIDADE = @mensalidade_reprovado WHERE CODIGO = @codigo_aluno
+		PRINT 'Nova mensalidade: R$ ' + CONVERT (CHAR(7), @mensalidade_reprovado) + ' / Aumento aplicado no valor de 20%'
+		PRINT 'Aluno Reprovado - Média: ' + CONVERT(CHAR(5), @MEDIA) + ' / Quantidade de faltas: ' + CONVERT(CHAR(100),@REPRO)
+END
+
+EXEC sp_situacao_alunos 6
+
+---------------------------------------------------------------------------------
 
 --4) Faça uma procedure em PL/SQL que receba por parâmetro um código de
 --aluno e atualize a mensalidade em percentual, conforme a quantidade de faltas,
 --ou seja, se 4 faltas aumentar em 4% a mensalidade do aluno.
 
+--CREATE PROCEDURE sp_atualiza @codigo int
+ALTER PROCEDURE sp_atualiza @codigo int
 
+AS
 
+DECLARE @mensalidade numeric(12, 2), @mensali_nova numeric(12, 2)
 
+SET @mensalidade = (SELECT (MENSALIDADE + (MENSALIDADE * QTDEFALTA/100)) FROM ALUNOS WHERE CODIGO = @codigo)
+SET @mensali_nova = @mensalidade
+
+UPDATE ALUNOS SET MENSALIDADE = @mensali_nova WHERE CODIGO = @codigo
+
+SELECT 'Nova mensalidade: R$ ' + CONVERT(CHAR(7), @mensali_nova) as 'Mensalidade atualizada'
+
+EXEC sp_atualiza 6
+
+SELECT MENSALIDADE FROM ALUNOS WHERE CODIGO = 6
+
+SELECT * FROM ALUNOS
+
+---------------------------------------------------------------------------------
 
 --5) Elabore uma procedure em PL/SQL que verifique se o aluno tem mensalidade
 --maior que 500 se sim adicione um novo campo email varchar(50) na tabela aluno
 --e atualizar o email com as 3 primeiras letras do nome mais @unicesumar.edu.br
 --a todos os alunos.
 
+--CREATE PROCEDURE sp_email @codigo int, @nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int, @mensalidade numeric(12,2), @qtdefalta int
+ALTER PROCEDURE sp_email @codigo int, @nome varchar(30), @nota1 numeric(12,2), @nota2 numeric(12,2), @coddis int, @mensalidade numeric(12,2), @qtdefalta int
 
+AS
 
+DECLARE @email varchar(50), @aluno_mensalidade numeric(12, 2)
+SET @email = 0
+SET @aluno_mensalidade = (SELECT MENSALIDADE FROM ALUNOS WHERE CODIGO = @codigo)
 
+IF @aluno_mensalidade > 500
+	BEGIN
+		INSERT INTO ALUNOS VALUES (@codigo, @nome, @nota1, @nota2, @coddis, @mensalidade, @qtdefalta, @email)
+		UPDATE ALUNOS SET @email = (SUBSTRING(@nome, 1, 3) + 'unicesumar.edu.br') WHERE CODIGO = @codigo
+	END
 
+EXEC sp_email 1, Lucas, 10, 8, 1, 1000.00, 2
 
-
+SELECT * FROM ALUNOS
 
 ---------------------------------------------------------------------------------
 
+--------------------------------     PROFESSOR    -------------------------------------------------
+
+-- EXERCICIOS DE STORED PROCEDURE 310322
+
+--1) Crie um stored procedure em PL/SQL que passe por parâmetro o código da
+--disciplina e mostre a qtde de alunos e a soma das mensalidades.
+
+--CREATE PROCEDURE sp_somador @coddis int
+ALTER PROCEDURE sp_somador @coddis int
+
+AS
+
+DECLARE @quantidade int
+DECLARE @soma numeric(12,2)
+
+SET @quantidade = (SELECT COUNT(*) FROM ALUNOS WHERE coddis = @coddis)
+SET @soma = (SELECT SUM(MENSALIDADE) FROM ALUNOS WHERE coddis = @coddis)
+
+SELECT 'A quantidade de aluno é: ' + CONVERT(CHAR(10), @quantidade) as 'Quantidade de alunos'
+SELECT 'A soma das mensalidades é igual a: ' + CONVERT(CHAR(10),@soma) as 'Soma de alunos'
+
+EXEC sp_somador 2
+
+---------------------------------------------------------------------------------
+
+--2) Elabore uma procedure em PL/SQL que passe por parâmetro um código de
+--aluno e verifique se está aprovado, recuperação ou reprovado, também está
+--reprovado se a qtde de faltas for maior 3.
+
+--CREATE PROCEDURE sp_situacao @codialuno int
+ALTER PROCEDURE sp_situacao @codialuno int
+
+AS
+
+DECLARE @MEDIA numeric(5,2)
+DECLARE @QUANTIDADEFALTA int
+
+SET @MEDIA = (SELECT ((nota1 + nota2)/2) FROM ALUNOS WHERE @codialuno = codigo)
+SET @QUANTIDADEFALTA = (SELECT QTDEFALTA FROM ALUNOS WHERE @codialuno = codigo)
+
+IF @QUANTIDADEFALTA > 3
+	BEGIN
+		SELECT 'Reprovado por faltas'
+	END
+ELSE
+BEGIN
+	IF @MEDIA >= 7 
+		BEGIN
+			SELECT 'Aluno Aprovado'
+		END
+	ELSE IF @MEDIA < 4 
+		BEGIN
+			SELECT 'Aluno reprovado'
+		END
+	ELSE 
+		BEGIN
+			SELECT 'Aluno em recuperaçao'
+		END
+END
+
+EXEC sp_situacao 1
+
+SELECT * FROM ALUNOS
+
+---------------------------------------------------------------------------------
+
+--3) Desenvolva uma procedure em PL/SQL que passe por parâmetro um código
+--de aluno e atualize a mensalidade em 20% caso esteja reprovado, 10% para
+--recuperação e um desconto de 30% se aprovado.
+
+--CREATE PROCEDURE sp_aluno_atualize @codialuno int 
+ALTER PROCEDURE sp_aluno_atualize @codialuno int
+
+AS
+
+DECLARE @MEDIA numeric(12,2)
+
+SET @MEDIA = (SELECT ((nota1 + nota2)/2) FROM ALUNOS WHERE codigo = @codialuno)
+
+IF @MEDIA >= 7 
+	BEGIN
+		UPDATE ALUNOS SET MENSALIDADE = MENSALIDADE * 0.7 WHERE codigo = @codialuno
+	END
+ELSE IF @MEDIA < 4
+	BEGIN
+		UPDATE ALUNOS SET MENSALIDADE = MENSALIDADE * 1.2 WHERE codigo = @codialuno
+	END
+ELSE 
+	BEGIN
+		UPDATE ALUNOS SET MENSALIDADE = MENSALIDADE * 1.1 WHERE codigo = @codialuno
+	END
+
+EXEC sp_aluno_atualize 2
+
+SELECT * FROM ALUNOS
+
+---------------------------------------------------------------------------------
+
+--4) Faça uma procedure em PL/SQL que receba por parâmetro um código de
+--aluno e atualize a mensalidade em percentual, conforme a quantidade de faltas,
+--ou seja, se 4 faltas aumentar em 4% a mensalidade do aluno.
+
+--CREATE PROCEDURE sp_atuali @codialuno int 
+ALTER PROCEDURE sp_atuali @codialuno int
+
+AS
+
+DECLARE @QTDEFALTA INT
+SET @QTDEFALTA = (SELECT QTDEFALTA FROM ALUNOS WHERE CODIGO = @codialuno)
+
+UPDATE ALUNOS SET MENSALIDADE = MENSALIDADE + (MENSALIDADE * @QTDEFALTA) / 100 WHERE CODIGO = @codialuno
 
 
+EXEC sp_atuali 2
+
+SELECT * FROM ALUNOS
+
+---------------------------------------------------------------------------------
+
+--5) Elabore uma procedure em PL/SQL que verifique se o aluno tem mensalidade
+--maior que 500 se sim adicione um novo campo email varchar(50) na tabela aluno
+--e atualizar o email com as 3 primeiras letras do nome mais @unicesumar.edu.br
+--a todos os alunos.
+
+ALTER TABLE ALUNOS ADD email varchar(50)
+CREATE PROCEDURE sp_email @codialuno int 
+--ALTER PROCEDURE sp_email @codialuno int
+
+AS
+
+DECLARE @MENSALIDADE numeric(10,2)
+SET @MENSALIDADE = (SELECT mensalidade FROM alunos WHERE codigo = @codialuno)
+
+IF @MENSALIDADE > 500
+	BEGIN
+		UPDATE ALUNOS SET email = SUBSTRING(nome,1,3) + '@unicesumar.edu.br'
+	END
+
+EXEC sp_email 8
+
+SELECT * FROM ALUNOS
+
+---------------------------------------------------------------------------------
