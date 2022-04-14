@@ -1741,4 +1741,312 @@ EXEC sp_email 8
 
 SELECT * FROM ALUNOS
 
+-----------------------------------  REPETIDOS DO DIA 24/03/2022 - REVISÃO PRA PROVA ----------------------------------------------
+
+/* 4) Crie a tabela disciplina (código, nome, cargaho) e relacione com a tabela aluno
+e insira os dados na tabela disciplina e no campo da tabela aluno e elabore uma
+procedure em PL/SQL que apresente os seguintes valores:
+a) Para a disciplina Matemática mensalidade mais 10%
+b) Para Banco de dados mensalidade menos 20 %
+c) Para Programação mensalidade mais 15% */
+
+create table aluno
+( codigo int primary key,
+ nome varchar(50),
+ nota1 numeric(5,2),
+ nota2 numeric(5,2),
+ coddis int,
+ mensalidade numeric(10,2),
+ qtdefalta int
+)
+
+insert into aluno values (1,'joao',8,7,1,500,4)
+insert into aluno values (2,'Ana Paula',5,7,2,400,2)
+insert into aluno values (3,'Mario Silva',2,3,3,400,8)
+insert into aluno values (4,'Marcio da Cruz',7,8,2,500,4)
+select * from aluno 
+
+
+
+create table disciplina
+( codigo int primary key,
+ nome varchar(50),
+ cargaho int
+)
+
+insert into disciplina values (1,'Matematica',80)
+insert into disciplina values (2,'Banco de dados',80)
+insert into disciplina values (3,'Programacao',80)
+
+create procedure sp_disciplina
+@disci int
+as
+if @disci = 1 --matematica
+begin
+select a.nome,d.nome,a.mensalidade*1.1 as 'Mensalidade mais 10%'
+from aluno a
+inner join disciplina d
+on a.coddis = d.codigo
+where a.coddis = @disci
+end
+else if @disci = 2
+begin
+select a.nome,d.nome,a.mensalidade*0.8 as 'Mensalidade menos 20%'
+from aluno a 
+inner join disciplina d
+on a.coddis = d.codigo
+where a.coddis = @disci
+end
+else if @disci = 3
+begin
+select a.nome,d.nome,a.mensalidade*1.15 as 'Mensalidade mais 15%'
+from aluno a
+inner join disciplina d
+on a.coddis = d.codigo
+where a.coddis = @disci
+end
+--drop procedure sp_disciplina
+exec sp_disciplina 2 
+
+-------------------------------------- REPETIDOS DO DIA 24/03/2022 - REVISÃO PRA PROVA -------------------------------------------
+
+/* 5 Desenvolva uma procedure em PL/SQL que passe por parâmetro o código do
+aluno e se não encontrar mostrar a mensagem aluno não cadastrado, se
+encontrar mostrar o nome a media e a disciplina cursada. */
+
+create procedure sp_alu
+@codigo int
+as
+declare @media numeric(5,2)
+declare @disci varchar(40)
+declare @nome varchar(40)
+set @media = (select (nota1+nota2)/2 from aluno
+ where codigo = @codigo)
+set @nome = (select nome from aluno
+ where codigo = @codigo)
+set @disci = (select d.nome from aluno a
+ inner join disciplina d
+ on a.coddis = d.codigo
+ where a.codigo = @codigo)
+if @media > 0
+begin
+ select @nome
+ select @disci
+ select @media
+end
+---execucao
+exec sp_alu 2 
+
+--------------------------------- REPETIDOS DO DIA 10/03/2022 - REVISÃO PRA PROVA ------------------------------------------------
+
+ -- RESOLUÇÃO DE EXERCICIOS DE PL/SQL AULA 100322
+-- 1) Desenvolva um script em SQL que mostre um contador até 100 e pare no número 62
+--mostrando o número como resultado;
+DECLARE @Contador AS INT
+SET @Contador = 1
+WHILE @Contador <= 100
+BEGIN
+ IF @Contador = 62
+ BEGIN
+ SELECT @Contador
+ BREAK
+ END
+SET @Contador = @Contador + 1
+END
+
+---------------------------------------------------------------------------------
+--  2) Elabore um script em SQL que apresente um contador até 1000 e mostre a soma dos
+-- números multiplos de 3 e multiplos de 5 e no final mostrar a soma de cada um deles;
+DECLARE @num as int
+DECLARE @SOMA3 AS INT
+DECLARE @SOMA5 AS INT
+DECLARE @QTDE3 AS INT
+DECLARE @QTDE5 AS INT
+SET @num = 1
+SET @SOMA3 = 0
+SET @SOMA5 = 0
+SET @QTDE3 = 0
+SET @QTDE5 = 0
+WHILE @num <= 1000
+BEGIN
+ IF @num%3 = 0 --armazena a somatoria dos multiplos de 3
+ BEGIN
+ SET @SOMA3 = @SOMA3 + @num
+ SET @QTDE3 = @QTDE3 + 1
+ END
+ IF @num%5 = 0 --armazena a somatoria dos multiplos de 5
+ BEGIN
+ SET @SOMA5 = @SOMA5 + @num
+ SET @QTDE5 = @QTDE5 + 1
+ END
+SET @num = @num + 1 --contador
+END
+SELECT 'Soma dos Multiplos de 3 => ' + CONVERT(CHAR(10), @SOMA3)
+SELECT 'Soma dos Multiplos de 5 => ' + CONVERT(CHAR(10), @SOMA5)
+SELECT 'Qtde dos Multiplos de 3 => ' + CONVERT(CHAR(10), @QTDE3)
+SELECT 'Qtde dos Multiplos de 5 => ' + CONVERT(CHAR(10), @QTDE5)
+
+---------------------------------------------------------------------------------
+-- 3) Crie um script em PL/SQL que mostre os números de 1 até 100 e mostre se o
+-- número é par ou impar.
+DECLARE @NUM AS INT
+SET @NUM = 1
+WHILE @NUM <= 100 
+BEGIN
+ IF @NUM%2 = 0
+ BEGIN
+ SELECT 'Numero Par = > '+ CONVERT(CHAR(10),@NUM)
+ END
+ ELSE
+ BEGIN
+ SELECT 'Numero Impar = > ' + CONVERT(CHAR(10),@NUM)
+ END
+SET @NUM = @NUM + 1
+END
+
+---------------------------------------------------------------------------------
+--4) Desenvolva um script em PL/SQL que apresente o resultado da variável idade será
+--formada pela data atual, ou seja, dia + mês + 21 do ano igual a 4 + 3 + 21 e
+--mostrar como resultado:
+--Se Menor que 10 igual a Criança
+--De 10 até 17 igual a Jovem
+--De 18 até 60 igual a Adulto
+--Acima de 61 Idoso
+
+DECLARE @IDADE AS INT
+SET @IDADE = DAY(GETDATE())+MONTH(GETDATE()) +
+CONVERT(INT, SUBSTRING( CONVERT(CHAR(4),YEAR(GETDATE())),3,2))
+Select @idade,
+CASE
+WHEN @idade < 10 THEN 'Crianca'
+WHEN @idade >= 10 AND @idade <= 17 THEN 'Jovem'
+WHEN @idade >= 18 AND @idade <= 60 THEN 'Adulto'
+Else 'Idoso'
+END AS Resultado
+
+---------------------------------------------------------------------------------
+--5) Mostrar em PL/SQL se o aluno Mário da silva está contido em uma variável,
+--bem como seu salário e calcular aumento de 10% para ele e mostre o nome em
+--letras maiúsculas.
+
+CREATE TABLE [Aluno]
+(Matricula Int NOT NULL Identity(1,1) --Contador automático
+,NomeAluno Varchar(100) NOT NULL
+,CPF CHAR(11) NOT NULL
+,DataNcto SMALLDATETIME NOT NULL
+,Mensalidade NUMERIC(6,2) NOT NULL
+,Turma char(10) NOT NULL
+)
+--MANIPULAÇÃO DE DADOS
+--Inserção de dados
+INSERT ALUNO VALUES ('José da Silva','12345678900','19911121', 1000,'ADS3')
+INSERT ALUNO VALUES ('Maria da Silva', '12345678911','20000317',1000, 'ADS1')
+INSERT ALUNO VALUES ('Ana da Silva', '12345678922','20000317', 1000,'ADS3')
+DECLARE @nome varchar(100)
+DECLARE @salario NUMERIC(10,2)
+DECLARE @NomeAluno varchar(100)
+/* DEFINE O VALOR DE CADA VARIÁVEL */
+SET @nome = 'Maria da Silva'
+SET @salario = 3000
+SET @NomeAluno = (SELECT NomeAluno FROM Aluno Where @nome = NomeAluno)
+select @NomeAluno
+IF @NomeAluno = @nome
+Begin
+ Select 'Aluno Contido ' + @nome
+Select 'Salario com 10% '+ convert(char(10),@salario*1.1)
+Select 'Aluno '+ upper(@nome)
+End
+
+---------------------------------------------------------------------------------
+--6) Elabore um laço de repetição usando PL/SQL que use While e quando o valor for 8
+--pare
+--e finalize o programa;
+
+DECLARE @Contador AS INT
+SET @Contador = 1
+WHILE @Contador <= 10
+BEGIN
+IF @Contador = 8
+Begin
+ select @Contador
+ BREAK
+End
+SET @Contador = @Contador + 1
+END
+
+---------------------------------------------------------------------------------
+--7) Desenvolva um script em PL/SQL que use duas variáveis e verifique se a media for
+--acima de 6 o aluno está aprovado senão reprovado;
+
+DECLARE @NOTA1 AS NUMERIC(3,1)
+DECLARE @NOTA2 AS NUMERIC(3,1)
+DECLARE @MEDIA AS NUMERIC(3,1)
+SET @NOTA1 = 1
+SET @NOTA2 = 6
+SET @MEDIA = (@NOTA1+@NOTA2)/2
+IF (@NOTA1 + @NOTA2)/2 > 6
+BEGIN
+ Select 'Aprovado ' + convert(char(5),@MEDIA)
+END
+ELSE
+BEGIN
+ Select 'Reprovado '+ convert(char(5),@MEDIA)
+END
+
+---------------------------------------------------------------------------------
+--8) Elabore um script em PL/SQL que verifique os números de 1 até 100 e mostre a
+--quantidade de pares e impares no final, bem como a soma de todos os pares e também a
+--soma dos
+--impares.
+
+DECLARE @Contador AS INT
+DECLARE @somapar as int
+DECLARE @qtdepar as int
+DECLARE @somaimpar as int
+DECLARE @qtdeimpar as int
+
+SET @Contador = 1
+set @somapar = 0
+set @qtdepar = 0
+set @somaimpar = 0
+set @qtdeimpar = 0
+WHILE @Contador <= 100
+BEGIN
+IF @Contador % 2= 0 --PAR
+BEGIN
+ set @somapar = @somapar + @contador
+ set @qtdepar = @qtdepar + 1
+END
+ELSE --IMPAR
+BEGIN
+ set @somaimpar = @somaimpar + @contador
+ set @qtdeimpar = @qtdeimpar + 1
+END
+SET @Contador = @Contador + 1
+END
+select ' Qtde de par '+ convert(char(10),@qtdepar)
+select ' Soma par '+ convert(char(10),@somapar)
+select ' Qtde de impar '+ convert(char(10),@qtdeimpar)
+select ' Soma impar '+ convert(char(10),@somaimpar)
+
+---------------------------------------------------------------------------------
+--9) Crie um script em PL/SQL usando CASE que mostre um laço de repetição de 1 até
+--5000 e
+--apresente a seguinte mensagem:
+--Se número entre 1000 e 2000 analista júnior
+--Se número entre 2500 e 4000 analista pleno
+--Senão analista sênior
+
+DECLARE @NUM AS INT
+SET @NUM = 1
+WHILE @NUM <= 5000
+BEGIN
+Select @NUM,
+CASE
+WHEN @NUM >= 1000 AND @NUM <= 2000 THEN 'Analista Junior'
+WHEN @NUM >= 2500 AND @NUM <= 4000 THEN 'Analista Pleno'
+Else 'Anaslista Senior'
+END AS Resultado
+SET @NUM = @NUM + 1
+
 ---------------------------------------------------------------------------------
