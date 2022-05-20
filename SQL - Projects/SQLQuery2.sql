@@ -2049,4 +2049,183 @@ Else 'Anaslista Senior'
 END AS Resultado
 SET @NUM = @NUM + 1
 
----------------------------------------------------------------------------------
+-------------------------------- 2° Bimestre - TRIGGER e CURSOR -------------------------------------------------
+
+-- 19/05/2022 --
+
+-- Exemplo --
+
+--Criar tabelas a seguir para implementar a trigger: 
+CREATE TABLE ALUNO 
+(MATRICULA INT PRIMARY KEY IDENTITY 
+,NOME VARCHAR(100) NOT NULL 
+,CPF CHAR(11) NOT NULL UNIQUE 
+,DATA_NCTO DATETIME NOT NULL) 
+
+CREATE TABLE ACESSO 
+(CÓDIGO INT PRIMARY KEY IDENTITY 
+,USUÁRIO VARCHAR(100) NOT NULL 
+,DATA DATETIME NOT NULL 
+,ALUNO VARCHAR(100) NOT NULL) 
+
+--Trigger que registra em uma tabela de acesso o usuário e a data de inserção 
+--de valores na tabela Aluno 
+CREATE TRIGGER tr_aluno on aluno 
+FOR INSERT 
+AS
+declare @usuario varchar(100), 
+ @data datetime, 
+ @aluno varchar(100) 
+select @usuario = system_user 
+select @data = getdate() 
+select @aluno = nome from inserted 
+Insert acesso(usuario, data, aluno) 
+values(@usuario, @data, @aluno) 
+--FIM DA TRIGGER 
+--Para a trigger ser disparada, inserir dados na tabela aluno. 
+INSERT ALUNO (NOME, CPF, DATA_NCTO) 
+VALUES('JOSÉ DA SILVA', '12345678901', '19710430') 
+
+-----------------------------------------------------------------------
+
+--CRIAÇÃO DA TABELA PARA USAR NA CRIAÇÃO DAS TRIGGERS
+CREATE TABLE [dbo].[ALUNO](
+ [MATRICULA] [int] PRIMARY KEY IDENTITY(1,1) NOT NULL,
+ [NOME] [varchar](100) NOT NULL,
+ [DATANCTO] [date] NOT NULL,
+ [TURMA] [char](2) NOT NULL,
+ [MENSALIDADE] [numeric](7, 2) NOT NULL,
+ [NOTA1] [numeric](3, 1) NULL,
+ [NOTA2] [numeric](3, 1) NULL,
+)
+GO
+--TRIGGER QUE VERIFICA SE O REGISTRO FOI INSERIDO COM 
+SUCESSO 
+CREATE TRIGGER SP_ALUNO ON ALUNO 
+FOR INSERT 
+AS
+IF (SELECT COUNT(*) FROM inserted) = 1 
+PRINT 'O registro foi inserido com sucesso' 
+GO
+--FIM CRIAÇÃO TRIGGER 
+INSERT ALUNO
+(NOME,DATANCTO,TURMA,MENSALIDADE,NOTA1,NOTA2)
+VALUES('JOSEWALDO','19911121','1A',200,8,7)
+--TRIGGER QUE NÃO PERMITE QUE OS REGISTROS SEJAM EXCLUÍDOS 
+DA TABELA 
+CREATE TRIGGER SP_ALUNO_D ON ALUNO 
+FOR DELETE 
+AS
+IF (SELECT COUNT(*) FROM DELETED) >= 1 
+BEGIN
+PRINT 'ALUNOS NÃO PODEM SER EXCLUÍDOS' 
+--CANCELA O COMANDO DE EXCLUSÃO
+ROLLBACK TRANSACTION
+END
+GO
+--FIM CRIAÇÃO TRIGGER 
+DELETE ALUNO 
+
+------------------------------------------------------------------------------
+
+--TRIGGER QUE VERIFICA A QUANTIDADE DE ALUNOS NA TURMA. 
+--PODEM SER MATRICULADOS NO MÁXIMO 10 ALUNOS 
+CREATE TRIGGER SP_ALUNO_TURMA ON ALUNO 
+FOR INSERT 
+AS
+--DECLARAÇÃO DE VARIÁVEIS 
+DECLARE @CONT INT, @TURMA VARCHAR(100)
+--ATRIBUINDO VALORES AS VARIÁVEIS 
+SELECT @TURMA=TURMA FROM inserted 
+SELECT @CONT = COUNT(*) FROM ALUNO WHERE TURMA = @TURMA 
+--VERIFICANDO SE O NÚMERO DE ALUNOS MATRICULADOS É MAIOR QUE 10 
+IF @CONT > 10 
+BEGIN
+PRINT 'Turma Lotada!!!' 
+ROLLBACK TRANSACTION
+END
+GO
+--FIM CRIAÇÃO TRIGGER 
+INSERT ALUNO (NOME, DATANCTO, TURMA, MENSALIDADE, NOTA1, NOTA2)
+VALUES('JOSEWALDO','19911121','1A',200,8,7)
+SELECT * FROM ALUNO
+
+------------------------------------------------------------------------------
+
+-- Exercício 1 --
+
+/* TRIGGER PARA ATUALIZAÇÃO DA CONTA
+Fazer uma Trigger que gere os valores debito e credito da 
+conta corrente, ao inserir um valor de pagto se o tipo for C 
+igual a credito somar o valor ao saldo da conta, senão se for 
+D igual a debito diminuir o valor do saldo.
+Verificar se o valor a ser debitado vai deixar a conta 
+negativa e avisar e mostrar o saldo que vai ficar negativo. */
+
+CREATE TABLE CONTA (
+	CODIGO INT PRIMARY KEY IDENTITY,
+	DATA DATETIME,
+	SALDO_FINAL NUMERIC(10, 2),
+	BANCO NUMERIC(6, 2),
+	AGENCIA VARCHAR(10),
+	CONTA VARCHAR(10)
+)
+
+CREATE TABLE PAGTO (
+	CODIGO INT PRIMARY KEY IDENTITY,
+	DATA DATETIME,
+	TIPO CHAR(1),
+	VALOR NUMERIC(10, 2),
+	BANCO NUMERIC(6, 2),
+	AGENCIA VARCHAR(10),
+	CONTA VARCHAR(10),
+)
+
+CREATE TRIGGER tr_conta ON PAGTO
+ALTER TRIGGER tr_conta ON PAGTO
+FOR INSERT
+AS
+DECLARE @valor numeric(10, 2), @tipo char(1), @saldo numeric(10, 2), @banco numeric(6, 2), @agencia varchar(10), @conta varchar(10)
+SET @valor = (SELECT VALOR FROM INSERTED)
+SET @tipo = (SELECT TIPO FROM INSERTED)
+SET @banco = (SELECT BANCO FROM INSERTED)
+SET @agencia = (SELECT AGENCIA FROM INSERTED)
+SET @conta = (SELECT CONTA FROM INSERTED)
+SET @saldo = (SELECT SALDO_FINAL FROM CONTA WHERE @banco = BANCO and @agencia = AGENCIA and @conta = CONTA)
+
+IF @tipo = 'c'
+	BEGIN
+		UPDATE CONTA
+		SET SALDO_FINAL = SALDO_FINAL + @valor
+		WHERE @banco = BANCO and @agencia = AGENCIA and @conta = CONTA
+	END
+ELSE IF @tipo = 'd'
+	BEGIN
+		IF @saldo - @valor < 0
+			BEGIN
+				SELECT 'O saldo vai ficar negativo em  R$ ' + CONVERT(CHAR(30), @saldo - @valor) AS 'Transação cancelada pois saldo irá ficar negativo'
+				ROLLBACK TRANSACTION
+			END
+		ELSE
+			BEGIN
+				UPDATE CONTA
+				SET SALDO_FINAL = SALDO_FINAL - @valor
+				WHERE @banco = BANCO and @agencia = AGENCIA and @conta = CONTA
+			END
+	END
+
+-- Inserindo valores na tabelas
+INSERT INTO CONTA VALUES ('20220910', 200, 002, 1717, 123)
+INSERT INTO PAGTO VALUES ('20220910', 'd', 500, 002, 1717, 123)
+
+DROP TABLE CONTA -- Apaga a Tabela
+DROP TABLE PAGTO -- Apaga a Tabela
+
+DELETE CONTA -- Apaga o conteúdo da tabela
+DELETE PAGTO -- Apaga o conteúdo da tabela
+
+TRUNCATE TABLE CONTA -- Apaga o conteúdo da tabela mais o ID auto-increment
+TRUNCATE TABLE PAGTO -- Apaga o conteúdo da tabela mais o ID auto-increment
+
+SELECT * FROM CONTA -- Seleciona a Tabela
+SELECT * FROM PAGTO -- Seleciona a Tabela
