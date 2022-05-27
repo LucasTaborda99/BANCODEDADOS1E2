@@ -2181,7 +2181,7 @@ CREATE TABLE PAGTO (
 	CONTA VARCHAR(10),
 )
 
-CREATE TRIGGER tr_conta ON PAGTO
+--CREATE TRIGGER tr_conta ON PAGTO
 ALTER TRIGGER tr_conta ON PAGTO
 FOR INSERT
 AS
@@ -2196,7 +2196,7 @@ SET @saldo = (SELECT SALDO_FINAL FROM CONTA WHERE @banco = BANCO and @agencia = 
 IF @tipo = 'c'
 	BEGIN
 		UPDATE CONTA
-		SET SALDO_FINAL = SALDO_FINAL + @valor
+		SET SALDO_FINAL += @valor
 		WHERE @banco = BANCO and @agencia = AGENCIA and @conta = CONTA
 	END
 ELSE IF @tipo = 'd'
@@ -2209,14 +2209,14 @@ ELSE IF @tipo = 'd'
 		ELSE
 			BEGIN
 				UPDATE CONTA
-				SET SALDO_FINAL = SALDO_FINAL - @valor
+				SET SALDO_FINAL -= @valor
 				WHERE @banco = BANCO and @agencia = AGENCIA and @conta = CONTA
 			END
 	END
 
 -- Inserindo valores na tabelas
 INSERT INTO CONTA VALUES ('20220910', 200, 002, 1717, 123)
-INSERT INTO PAGTO VALUES ('20220910', 'd', 500, 002, 1717, 123)
+INSERT INTO PAGTO VALUES ('20220910', 'c', 500, 002, 1717, 123)
 
 DROP TABLE CONTA -- Apaga a Tabela
 DROP TABLE PAGTO -- Apaga a Tabela
@@ -2229,3 +2229,178 @@ TRUNCATE TABLE PAGTO -- Apaga o conteúdo da tabela mais o ID auto-increment
 
 SELECT * FROM CONTA -- Seleciona a Tabela
 SELECT * FROM PAGTO -- Seleciona a Tabela
+
+--------------------------------------------------------- Exercícios dia 26/05/2022 ---------------------------------------------------------
+
+--------------------------------- Exercício 1 - Triggers ---------------------------------------------
+
+/* Tabela produto 
+Código   Nome      Vlr unit   qtde   %INSS	   %IPI   %PIS    %COF   %CSL   %ICMS 
+ 150    MONITOR		  780      2       8        5       6      4       3     10
+ 147    CPU           1250     3       9        6       5      2       4      7 
+ 168    HD SSD        640      4       5        8       9      7       6     17
+ 
+Construir uma trigger ao inserir um registro na tabela produto, inserir dados em uma nova tabela para 
+armazenar os dados e valores dos produtos com o valor total, bem como todos os valores conforme 
+cada percentual exemplo: para calcular o %INSS, Valorinss = ((qtde * vlr unit) * 8) / 100 */
+
+-- Criando as tabelas
+CREATE TABLE PRODUTO (
+CODIGO INT PRIMARY KEY,
+NOME VARCHAR(50),
+VALOR_UNITARIO NUMERIC(12,2),
+QUANTIDADE INT,
+INSS NUMERIC(6,2),
+IPI NUMERIC(6,2),
+PIS NUMERIC(6,2),
+COF NUMERIC(6,2),
+CSL NUMERIC(6,2),
+ICMS NUMERIC(6,2)
+)
+
+CREATE TABLE VALORES_TOTAIS_PRODUTOS (
+CODIGO INT PRIMARY KEY,
+NOME VARCHAR(50),
+VALOR_UNITARIO NUMERIC(12,2),
+QUANTIDADE INT,
+INSS NUMERIC(6,2),
+IPI NUMERIC(6,2),
+PIS NUMERIC(6,2),
+COF NUMERIC(6,2),
+CSL NUMERIC(6,2),
+ICMS NUMERIC(6,2),
+VALOR_TOTAL NUMERIC(12,2)
+)
+
+-- Criando o trigger
+CREATE TRIGGER tr_valores_totais ON PRODUTO
+--ALTER TRIGGER tr_valores_totais ON PRODUTO
+FOR INSERT
+AS
+DECLARE @codigo int, @nome varchar(50), @valor_unitario numeric(12,2), @quantidade int, @inss numeric(6,2),
+@ipi numeric(6,2), @pis numeric(6,2), @cof numeric(6,2), @csl numeric(6,2), @icms numeric(6,2), @valor_total numeric(12,2)
+
+SET @codigo = (SELECT CODIGO FROM INSERTED)
+SET @nome = (SELECT NOME FROM INSERTED)
+SET @valor_unitario = (SELECT VALOR_UNITARIO FROM INSERTED)
+SET @quantidade = (SELECT QUANTIDADE FROM INSERTED)
+SET @inss = (SELECT INSS FROM INSERTED)
+SET @ipi = (SELECT IPI FROM INSERTED)
+SET @pis = (SELECT PIS FROM INSERTED)
+SET @cof = (SELECT COF FROM INSERTED)
+SET @csl = (SELECT CSL FROM INSERTED)
+SET @icms = (SELECT ICMS FROM INSERTED)
+
+SET @inss = (((@quantidade * @valor_unitario) * @inss) / 100)
+SET @ipi = (((@quantidade * @valor_unitario) * @ipi) / 100)
+SET @pis = (((@quantidade * @valor_unitario) * @pis) / 100)
+SET @cof = (((@quantidade * @valor_unitario) * @cof) / 100)
+SET @csl = (((@quantidade * @valor_unitario) * @csl) / 100)
+SET @icms = (((@quantidade * @valor_unitario) * @icms) / 100)
+
+SET @valor_total = (SELECT (@valor_unitario * @quantidade) + @inss + @ipi + @pis + @cof + @csl + @icms FROM INSERTED)
+
+INSERT INTO VALORES_TOTAIS_PRODUTOS VALUES (@codigo, @nome, @valor_unitario, @quantidade, @inss, @ipi, @pis, @cof, @csl, @icms, @valor_total)
+
+-- Inserindo valores na tabela
+INSERT INTO PRODUTO VALUES (199, 'TECLADO', 300, 15, 4.5, 6, 8.8, 3.0, 5.9, 10)
+INSERT INTO PRODUTO VALUES (200, 'MOUSE', 100, 20, 4.5, 6, 8, 31, 30, 25)
+INSERT INTO PRODUTO VALUES (201, 'CADEIRA', 100, 10, 4, 4, 2, 4, 9, 10.10)
+INSERT INTO PRODUTO VALUES (202, 'MESA', 1000, 10.6, 4, 4.3, 2.5, 4.2, 7.5, 9)
+
+DROP TABLE PRODUTO -- Apaga o conteúdo da tabela
+DROP TABLE VALORES_TOTAIS_PRODUTOS -- Apaga o conteúdo da tabela
+
+TRUNCATE TABLE PRODUTO -- Apaga o conteúdo da tabela mais o ID auto-increment
+TRUNCATE TABLE VALORES_TOTAIS_PRODUTOS -- Apaga o conteúdo da tabela mais o ID auto-increment
+
+SELECT * FROM PRODUTO -- Seleciona a Tabela
+SELECT * FROM VALORES_TOTAIS_PRODUTOS -- Seleciona a Tabela
+
+--------------------------------- Exercício 2 - Triggers ---------------------------------------------
+
+/* Desenvolva o exercício em PL/SQL de trigger utilizando as tabelas nota (numero, codcli, data, valor, qtde) e
+cliente (codcli, nome, cidade, pinss, pipi, picm). Desenvolver uma trigger para controlar a geração de uma nova
+nota, para isso criar uma nova tabela com o nome audit e os campos (numero da nota, codcli, valor total, 
+valor inss, valor pipi, valor picm) */
+
+-- Criando as tabelas
+CREATE TABLE NOTA (
+NUMERO_NOTA INT PRIMARY KEY,
+CODIGO_CLIENTE INT,
+DATA DATETIME,
+VALOR_NOTA NUMERIC(12,2),
+QUANTIDADE INT
+)
+
+CREATE TABLE CLIENTE (
+CODIGO_CLIENTE INT PRIMARY KEY,
+NOME_CLIENTE VARCHAR(100),
+CIDADE VARCHAR(100),
+PINSS NUMERIC(6,2),
+PIPI NUMERIC(6,2),
+PICM NUMERIC(6,2)
+)
+
+CREATE TABLE AUDITORIA (
+ID INT PRIMARY KEY IDENTITY,
+NUMERO_NOTA INT,
+CODIGO_CLIENTE INT,
+VALOR_INSS NUMERIC(6,2),
+VALOR_IPI NUMERIC(6,2),
+VALOR_ICM NUMERIC(6,2),
+VALOR_TOTAL NUMERIC(12,2)
+)
+
+-- Criando o trigger
+CREATE TRIGGER tr_controle_auditoria ON NOTA
+--ALTER TRIGGER tr_controle_auditoria ON NOTA
+FOR INSERT
+AS
+DECLARE @numero_nota int, @codigo_cliente int, @data datetime, @valor_nota numeric(12,2), @quantidade int,
+@nome_cliente varchar(100), @cidade varchar(100), @pinss numeric(6,2), @pipi numeric(6,2), @picm numeric(6,2),
+@valor_inss numeric(6,2), @valor_ipi numeric(6,2), @valor_icm numeric(6,2), @valor_total numeric(12,2)
+
+SET @numero_nota = (SELECT NUMERO_NOTA FROM INSERTED)
+SET @codigo_cliente = (SELECT CODIGO_CLIENTE FROM INSERTED)
+SET @data = (SELECT DATA FROM INSERTED)
+SET @valor_nota = (SELECT VALOR_NOTA FROM INSERTED)
+SET @quantidade = (SELECT QUANTIDADE FROM INSERTED)
+
+SET @nome_cliente = (SELECT NOME_CLIENTE FROM CLIENTE WHERE @codigo_cliente = CODIGO_CLIENTE)
+SET @cidade = (SELECT CIDADE FROM CLIENTE WHERE @codigo_cliente = CODIGO_CLIENTE)
+SET @pinss = (SELECT PINSS FROM CLIENTE WHERE @codigo_cliente = CODIGO_CLIENTE)
+SET @pipi = (SELECT PIPI FROM CLIENTE WHERE @codigo_cliente = CODIGO_CLIENTE)
+SET @picm = (SELECT PICM FROM CLIENTE WHERE @codigo_cliente = CODIGO_CLIENTE)
+
+SET @valor_inss = (((@quantidade * @valor_nota) * @pinss) / 100)
+SET @valor_ipi = (((@quantidade * @valor_nota) * @pipi) / 100)
+SET @valor_icm = (((@quantidade * @valor_nota) * @picm) / 100)
+
+SET @valor_total = (SELECT (@valor_nota * @quantidade) + @valor_inss + @valor_ipi + @valor_icm FROM INSERTED)
+
+INSERT INTO AUDITORIA VALUES (@numero_nota, @codigo_cliente, @valor_inss, @valor_ipi, @valor_icm, @valor_total)
+
+-- Inserindo valores nas tabelas
+INSERT INTO CLIENTE VALUES (1, 'Lucas', 'Curitiba', 10, 15, 20)
+INSERT INTO CLIENTE VALUES (2, 'Maria', 'São Paulo', 15, 12, 25.33)
+INSERT INTO CLIENTE VALUES (3, 'José', 'Florianópolis', 8.99, 22, 10.5)
+INSERT INTO CLIENTE VALUES (4, 'Ana', 'Santos', 15, 11.5, 24.5)
+
+INSERT INTO NOTA VALUES (999, 1, '20220526', 100.00, 2)
+INSERT INTO NOTA VALUES (1000, 2, '20220527', 200.00, 10)
+INSERT INTO NOTA VALUES (1001, 3, '20220528', 300.00, 3)
+INSERT INTO NOTA VALUES (1002, 4, '20220529', 400.00, 5)
+INSERT INTO NOTA VALUES (1003, 1, '20220530', 200.00, 2)
+
+DROP TABLE NOTA -- Apaga o conteúdo da tabela
+DROP TABLE CLIENTE -- Apaga o conteúdo da tabela
+DROP TABLE AUDITORIA -- Apaga o conteúdo da tabela
+
+TRUNCATE TABLE NOTA -- Apaga o conteúdo da tabela mais o ID auto-increment
+TRUNCATE TABLE CLIENTE -- Apaga o conteúdo da tabela mais o ID auto-increment
+TRUNCATE TABLE AUDITORIA -- Apaga o conteúdo da tabela mais o ID auto-increment
+
+SELECT * FROM NOTA -- Seleciona a Tabela
+SELECT * FROM CLIENTE -- Seleciona a Tabela
+SELECT * FROM AUDITORIA -- Seleciona a Tabela
