@@ -2404,3 +2404,51 @@ TRUNCATE TABLE AUDITORIA -- Apaga o conteúdo da tabela mais o ID auto-increment
 SELECT * FROM NOTA -- Seleciona a Tabela
 SELECT * FROM CLIENTE -- Seleciona a Tabela
 SELECT * FROM AUDITORIA -- Seleciona a Tabela
+
+--------------------------------------------------------- Exercícios dia 02/06/2022 ---------------------------------------------------------
+
+--------------------------------- Exercício 1 - Cursores ---------------------------------------------
+
+/* 1) Criar uma tabela e inserir alguns registros, fazer uma rotina que usa cursor para 
+ler e mostrar o conteúdo de toda a tabela. */
+
+CREATE TABLE ALUNOS (
+CODIGO INT NULL,
+NOME VARCHAR(50) NULL
+)
+
+DROP TABLE ALUNOS
+
+INSERT INTO ALUNOS VALUES (1, 'Lucas')
+INSERT INTO ALUNOS VALUES (2, 'Maria')
+INSERT INTO ALUNOS VALUES (3, 'José')
+INSERT INTO ALUNOS VALUES (4, 'Ana')
+INSERT INTO ALUNOS VALUES (5, 'João')
+
+SELECT * FROM ALUNOS
+
+-- 1. Declarar o CURSOR (DECLARE)
+DECLARE aluno_Cursor CURSOR FOR	
+SELECT TOP 3 CODIGO, NOME FROM ALUNOS ORDER BY CODIGO -- Consulta que retornará registros que serão lidos pelo cursor
+
+-- 2. Abrir o CURSOR (OPEN)
+OPEN aluno_Cursor
+
+-- 3. Alimentar as variáveis com os dados do CURSOR (FETCH)
+DECLARE @codigo int, @nome varchar(50) -- Declarando as variáveis
+
+-- Buscando próximo registro
+FETCH NEXT FROM	aluno_Cursor INTO @codigo, @nome
+
+-- Enquanto for verdadeiro (0), ou seja, enquanto há próximo registro	
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SELECT 'Código	do cliente: ' + CONVERT(CHAR(5), @codigo) AS 'CÓDIGO DO CLIENTE'
+		SELECT 'Nome do cliente: ' + @nome AS 'NOME DO CLIENTE'
+		SELECT '_________________________________________________' AS 'FIM'
+		FETCH NEXT FROM aluno_Cursor INTO @codigo, @nome
+	END
+
+-- 4. Fechar e Desalocar(Tirar o cursor da memória) o CURSOR (CLOSE e DEALLOCATE)
+CLOSE aluno_Cursor
+DEALLOCATE aluno_Cursor
