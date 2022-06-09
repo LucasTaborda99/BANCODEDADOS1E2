@@ -2429,7 +2429,7 @@ SELECT * FROM ALUNOS
 
 -- 1. Declarar o CURSOR (DECLARE)
 DECLARE aluno_Cursor CURSOR FOR	
-SELECT TOP 3 CODIGO, NOME FROM ALUNOS ORDER BY CODIGO -- Consulta que retornará registros que serão lidos pelo cursor
+SELECT TOP 5 CODIGO, NOME FROM ALUNOS ORDER BY CODIGO -- Consulta que retornará registros que serão lidos pelo cursor
 
 -- 2. Abrir o CURSOR (OPEN)
 OPEN aluno_Cursor
@@ -2452,3 +2452,68 @@ WHILE @@FETCH_STATUS = 0
 -- 4. Fechar e Desalocar(Tirar o cursor da memória) o CURSOR (CLOSE e DEALLOCATE)
 CLOSE aluno_Cursor
 DEALLOCATE aluno_Cursor
+
+--------------------------------------------------------- Exercícios dia 09/06/2022 ---------------------------------------------------------
+
+--------------------------------- Exercício 1 - Cursores ---------------------------------------------
+CREATE TABLE ALUNO1 (
+CODIGO INT NULL,
+NOME VARCHAR(50) NULL,
+NOTA1 NUMERIC(6, 2),
+NOTA2 NUMERIC(6, 2)
+)
+
+DROP TABLE ALUNO1
+
+INSERT INTO ALUNO1 VALUES (1, 'Lucas',8, 7)
+INSERT INTO ALUNO1 VALUES (2, 'Maria',6, 4)
+INSERT INTO ALUNO1 VALUES (3, 'José',6, 8)
+INSERT INTO ALUNO1 VALUES (4, 'Ana',3, 7)
+INSERT INTO ALUNO1 VALUES (5, 'João',3, 3)
+
+SELECT * FROM ALUNO1
+
+-- 1. Declarar o CURSOR (DECLARE)
+DECLARE cr_alunos CURSOR FOR	
+SELECT NOME, NOTA1, NOTA2 FROM ALUNO1 ORDER BY CODIGO
+
+OPEN cr_alunos
+
+-- 3. Alimentar as variáveis com os dados do CURSOR (FETCH)
+DECLARE @nome varchar(50), @nota1 numeric(6, 2), @nota2 numeric(6, 2), @media numeric(6, 2) -- Declarando as variáveis
+
+
+-- Buscando próximo registro
+FETCH NEXT FROM	cr_alunos INTO @nome, @nota1, @nota2
+
+-- Enquanto for verdadeiro (0), ou seja, enquanto há próximo registro	
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+	SET @media = ((@nota1 + @nota2) / 2)
+		IF (@media) >= 6
+			BEGIN
+			SELECT 'Aluno - ' + @nome + ' - Aprovado com nota: ' + CAST(@MEDIA AS CHAR(5)) AS 'Situação do aluno'
+			END
+		ELSE IF(@media) < 4
+			BEGIN
+				SELECT 'Aluno - ' + @nome + ' - Reprovado com nota: ' + CAST(@MEDIA AS CHAR(5))AS 'Situação do aluno'
+			END
+		ELSE
+			BEGIN
+				SELECT 'Aluno - ' + @nome + ' - Recuperação com nota: ' + CAST(@MEDIA AS CHAR(5))AS 'Situação do aluno'
+			END
+		FETCH NEXT FROM cr_alunos INTO @nome, @nota1, @nota2
+	END
+
+-- 4. Fechar e Desalocar(Tirar o cursor da memória) o CURSOR (CLOSE e DEALLOCATE)
+CLOSE cr_alunos
+DEALLOCATE cr_alunos
+
+
+
+DECLARE @MEDIA NUMERIC(7,2)
+	SET @MEDIA = (SELECT (nota1 + nota2 / 2) FROM ALUNO2 WHERE matricula = @matricula)
+
+	IF (@MEDIA >= 7)
+		BEGIN
+			SELECT 'Aluno aprovado - Média: ' + CAST(@MEDIA AS CHAR(5)) AS 'Situação do aluno'
