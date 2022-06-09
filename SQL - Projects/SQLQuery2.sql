@@ -2508,12 +2508,3 @@ WHILE @@FETCH_STATUS = 0
 -- 4. Fechar e Desalocar(Tirar o cursor da memória) o CURSOR (CLOSE e DEALLOCATE)
 CLOSE cr_alunos
 DEALLOCATE cr_alunos
-
-
-
-DECLARE @MEDIA NUMERIC(7,2)
-	SET @MEDIA = (SELECT (nota1 + nota2 / 2) FROM ALUNO2 WHERE matricula = @matricula)
-
-	IF (@MEDIA >= 7)
-		BEGIN
-			SELECT 'Aluno aprovado - Média: ' + CAST(@MEDIA AS CHAR(5)) AS 'Situação do aluno'
