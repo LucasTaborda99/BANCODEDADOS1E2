@@ -2508,3 +2508,237 @@ WHILE @@FETCH_STATUS = 0
 -- 4. Fechar e Desalocar(Tirar o cursor da memória) o CURSOR (CLOSE e DEALLOCATE)
 CLOSE cr_alunos
 DEALLOCATE cr_alunos
+
+--------------------------------------------------------- Exercícios dia 09/06/2022 - Minhas Resoluções ---------------------------------------------------------
+
+/* 1) Criar uma tabela aluno com os campos codigo, nome, nota1, nota2, qtdefaltas e qtdeaulas inserir 
+5 registros na tabela e mostrar com uso de cursor todos os nomes dos alunos, e se a nota1 mais 
+nota2 divido por dois é maior ou igual a 6 mostrar aprovado, se menor de quatro reprovado, senão 
+recuperação. Também verificar se o aluno não está reprovado por falta com a seguinte regra a 
+quantidade de falta for maior que 20% da quantidade de aulas o aluno está reprovado por falta. */
+
+CREATE TABLE ALUN 
+( COD INT PRIMARY KEY, 
+NOME VARCHAR(30), 
+NOTA1 NUMERIC(3,1), 
+NOTA2 NUMERIC(3,1), 
+QTDEFALTA INT, 
+QTDEAULA INT 
+)
+
+INSERT INTO ALUN VALUES(1, 'ANA PAULA', 8, 7,1,100) 
+INSERT INTO ALUN VALUES(2, 'MARIA', 6, 4,5,100) 
+INSERT INTO ALUN VALUES(3, 'MARIO', 6, 8,2,100) 
+INSERT INTO ALUN VALUES(4, 'SALETE', 3, 7,10,100) 
+INSERT INTO ALUN VALUES(5, 'ANTONIO', 3, 3,30,100)
+
+SELECT * FROM ALUN
+
+DECLARE cr_alun CURSOR FOR
+SELECT NOME, NOTA1, NOTA2, QTDEFALTA, QTDEAULA FROM ALUN ORDER BY COD
+
+OPEN cr_alun
+DECLARE @nome varchar(50), @nota1 numeric(6, 2), @nota2 numeric(6, 2), @qtdefalta int, @qtdeaula int, @media numeric(6, 2)
+
+FETCH NEXT FROM cr_alun INTO @nome, @nota1, @nota2, @qtdefalta, @qtdeaula
+
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @media = ((@nota1 + @nota2) / 2)
+			IF @qtdefalta > (@qtdeaula * 0.2)
+				BEGIN
+					SELECT 'Aluno(a) ' + @nome + ' reprovado por faltas, quantidade de faltas: ' + CONVERT(CHAR(5), @qtdefalta) AS 'Situação do aluno'
+				END
+			ELSE
+				BEGIN
+					IF @media >= 6
+						BEGIN
+							SELECT 'Aluno(a) ' + @nome + ' aprovado com nota: ' + CONVERT(CHAR(5), @media) AS 'Situação do Aluno'
+						END
+					ELSE IF @media < 4
+						BEGIN
+							SELECT 'Aluno(a) ' + @nome + ' reprovado com nota: ' + CONVERT(CHAR(5), @media) AS 'Situação do Aluno'
+						END
+					ELSE
+						BEGIN
+							SELECT 'Aluno(a) ' + @nome + ' em recuperação com nota: ' + CONVERT(CHAR(5), @media) AS 'Situação do aluno'
+						END
+				 END
+		FETCH NEXT FROM cr_alun INTO @nome, @nota1, @nota2, @qtdefalta, @qtdeaula
+	END
+	CLOSE cr_alun
+	DEALLOCATE cr_alun
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+/* 2) Criar uma tabela produto com os campos codigo, nome, UF, cidade, valor, percentual ICMS e 
+percentual de IPI, inserir 5 registros na tabela e mostrar com uso de cursor todos os produtos da 
+UF SP, PR, SC o nome o valor e os percentuais de ICMS e IPI, bem como os respectivos valores 
+(valor multiplicado pelo percentual de ICMS e IPI). No final apresentar o valor total dos produtos e 
+os valores totais de ICMS e IPI. */
+
+CREATE TABLE PRODUTO 
+( CODIGO INT NOT NULL PRIMARY KEY, 
+NOME VARCHAR(50), 
+UF VARCHAR(2), 
+CIDADE VARCHAR(30), 
+VALOR NUMERIC(12,2), 
+ICMS NUMERIC(5,2), 
+IPI NUMERIC(5,2) 
+)
+
+INSERT INTO PRODUTO VALUES(10,'MOUSE', 'PR','CURITIBA',125,5,10) 
+INSERT INTO PRODUTO VALUES(20,'CPU', 'PR','CURITIBA',1215,15,8) 
+INSERT INTO PRODUTO VALUES(30,'TECLADO', 'BA','CENTRO',135,7,17) 
+INSERT INTO PRODUTO VALUES(40,'MONITOR', 'SP','ITU',515,18,10) 
+INSERT INTO PRODUTO VALUES(50,'IMPRESSORA', 'SC','CENTRO',825,7,12)
+
+SELECT * FROM PRODUTO
+
+DECLARE cr_produtos CURSOR FOR
+SELECT NOME, VALOR, ICMS, IPI FROM PRODUTO WHERE UF IN ('SP', 'PR', 'SC')
+
+OPEN cr_produtos
+
+DECLARE @nome varchar(50), @valor numeric(6, 2), @picms numeric(6, 2), @pipi numeric(6, 2), @vicms numeric(6, 2), @vipi numeric(6, 2), @vtotalimpostos numeric(6, 2), @vtotalproduto numeric(6, 2)
+FETCH NEXT FROM cr_produtos INTO @nome, @valor, @picms, @pipi
+
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+
+		SET @vicms = (@valor * (@picms / 100))
+		SET @vipi = (@valor * (@pipi / 100))
+		SET @vtotalimpostos = (@vicms + @vipi)
+		SET @vtotalproduto = (@valor + @vtotalimpostos)
+
+		SELECT @nome AS 'Nome do produto', @valor AS 'Valor do produto antes dos impostos (R$)',
+		@picms AS 'Porcentagem de ICMS (%)', @pipi AS 'Porcentagem de IPI (%)', @vicms AS 'Valor total de ICMS (R$)',
+		@vipi AS 'Valor total de IPI (R$)', @vtotalimpostos AS 'Valor total de impostos (R$)',
+		@vtotalproduto AS 'Valor final do produto após os impostos (R$)'
+		FETCH NEXT FROM cr_produtos INTO @nome, @valor, @picms, @pipi
+	END
+CLOSE cr_produtos
+DEALLOCATE cr_produtos
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+/* 3) Criar uma tabela Tbaluno com os campos codigo, nome, sexo, UF, cidade, nota1, nota2, curso, 
+mensalidade inserir 5 registros na tabela e mostrar com uso de cursor quantos alunos são de cada 
+curso e quantos são mulheres e homens, bem como o valor total das mensalidades dos alunos por 
+curso. Para os alunos que tem média acima 8 conceder um desconto de 10% na mensalidade. */
+
+CREATE TABLE TBALUNO 
+( CODIGO INT NOT NULL PRIMARY KEY, 
+NOME VARCHAR(40), 
+SEXO VARCHAR(1), 
+UF VARCHAR(2), 
+CIDADE VARCHAR(30), 
+NOTA1 NUMERIC(5,2), 
+NOTA2 NUMERIC(5,2), 
+CURSO VARCHAR(3), 
+MENSALIDADE NUMERIC(12,2) 
+)
+
+DROP TABLE TBALUNO
+
+INSERT INTO TBALUNO VALUES (11,'PAULO','M','PR','CURITIBA',9,9,'ADS',485) 
+INSERT INTO TBALUNO VALUES (12,'MARIA','F','MG','CENTRO',8,9,'ADM',685) 
+INSERT INTO TBALUNO VALUES (13,'ANTONIO','M','SP','OSASCO',9,7,'ADS',485) 
+INSERT INTO TBALUNO VALUES (14,'SALETE','F','PR','CURITIBA',9,9,'ENG',995) 
+INSERT INTO TBALUNO VALUES (15,'JULIANO','M','SC','ITAJAI',8,8,'ADM',685)
+
+SELECT * FROM TBALUNO
+
+DECLARE cr_alunos CURSOR FOR
+
+SELECT NOME, NOTA1, NOTA2 FROM TBALUNO WHERE CURSO IN ('ADM') -- Alterar aqui a turma que você quiser verficar e atualizar as mensalidades
+
+OPEN cr_alunos
+
+DECLARE @nome varchar(40), @quantidade_alunos_adm int, @quantidade_alunos_ads int, @quantidade_alunos_eng int, @quantidade_alunos_ads_f int,
+@quantidade_alunos_ads_m int, @quantidade_alunos_eng_f int, @quantidade_alunos_eng_m int, @quantidade_alunos_adm_f int,
+@quantidade_alunos_adm_m int, @mensalidade_total_alunos_adm numeric(6, 2), @mensalidade_total_alunos_ads numeric(6, 2), @mensalidade_total_alunos_eng numeric(6, 2),
+@nota1 numeric(6, 2), @nota2 numeric(6, 2), @media numeric(6, 2)
+
+FETCH NEXT FROM cr_alunos INTO @nome, @nota1, @nota2
+
+	SET @media = ((@nota1 + @nota2) / 2)
+
+		IF @media > 8
+		BEGIN
+			UPDATE TBALUNO
+			SET MENSALIDADE = MENSALIDADE - (MENSALIDADE * 0.10)
+			WHERE NOME = @nome
+		END
+
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @quantidade_alunos_ads = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ADS')
+		SET @quantidade_alunos_eng = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ENG')
+		SET @quantidade_alunos_adm = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ADM')
+
+		SET @quantidade_alunos_ads_f = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ADS' AND SEXO LIKE 'F')
+		SET @quantidade_alunos_ads_m = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ADS' AND SEXO LIKE 'M')
+		SET @quantidade_alunos_eng_f = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ENG' AND SEXO LIKE 'F')
+		SET @quantidade_alunos_eng_m = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ENG' AND SEXO LIKE 'M')
+		SET @quantidade_alunos_adm_f = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ADM' AND SEXO LIKE 'F')
+		SET @quantidade_alunos_adm_m = (SELECT COUNT(NOME) FROM TBALUNO WHERE CURSO LIKE 'ADM' AND SEXO LIKE 'M')
+
+		SET @mensalidade_total_alunos_ads = (SELECT SUM(MENSALIDADE) FROM TBALUNO WHERE CURSO LIKE 'ADS')
+		SET @mensalidade_total_alunos_adm = (SELECT SUM(MENSALIDADE) FROM TBALUNO WHERE CURSO LIKE 'ADM')
+		SET @mensalidade_total_alunos_eng = (SELECT SUM(MENSALIDADE) FROM TBALUNO WHERE CURSO LIKE 'ENG')
+
+		SELECT 'Quantidade de alunos: ' + CONVERT(CHAR(2), @quantidade_alunos_adm) + '/ Feminino: ' + CONVERT(CHAR(2), @quantidade_alunos_adm_f) + 
+		'/ Masculino: ' + CONVERT(CHAR(2), @quantidade_alunos_adm_m) + '/ Soma da mensalidade total de todos os alunos: ' + CONVERT(CHAR(10), @mensalidade_total_alunos_adm) AS 'ADM'
+		SELECT 'Quantidade de alunos: ' + CONVERT(CHAR(2), @quantidade_alunos_ads) + '/ Feminino: ' + CONVERT(CHAR(2), @quantidade_alunos_ads_f) + 
+		'/ Masculino: ' + CONVERT(CHAR(2), @quantidade_alunos_ads_m) + '/ Soma da mensalidade total de todos os alunos: ' + CONVERT(CHAR(10), @mensalidade_total_alunos_ads) AS 'ADS'
+		SELECT 'Quantidade de alunos: ' + CONVERT(CHAR(2), @quantidade_alunos_eng) + '/ Feminino: ' + CONVERT(CHAR(2), @quantidade_alunos_eng_f) + 
+		'/ Masculino: ' + CONVERT(CHAR(2), @quantidade_alunos_eng_m) + '/ Soma da mensalidade total de todos os alunos: ' + CONVERT(CHAR(10), @mensalidade_total_alunos_eng) AS 'ENG'
+
+		FETCH NEXT FROM cr_alunos INTO @nome, @nota1, @nota2
+	END
+CLOSE cr_alunos
+DEALLOCATE cr_alunos
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+/* 4) A partir das tabelas departamento e funcionário faça o relacionamento e desenvolva usando 
+cursor em programa em PL/SQL que mostre o nome do funcionário, departamento, salário total, 
+valor de FGTS e Valor do INSS, no final apresentar o total geral do salário, do FGTS e INSS, apenas 
+dos departamentos 3 e 2, cuja a quantidade de horas seja maior que 200 e menor que 360 e o mês 
+referente a data seja 2 e 4 apenas. */
+
+CREATE TABLE DEPARTAMENTO 
+( 
+DEPTO_COD INT PRIMARY KEY IDENTITY(1,1), 
+DEPTO_NOME VARCHAR(40), 
+DEPTO_QTDE_HORAS INT 
+)
+
+CREATE TABLE FUNCIONARIO 
+( 
+FUNC_MAT INT PRIMARY KEY IDENTITY(10,10), 
+FUNC_NOME VARCHAR(40), 
+FUNC_DEPTO INT FOREIGN KEY REFERENCES DEPARTAMENTO(DEPTO_COD), 
+FUNC_SALARIO_HORA NUMERIC(12,2), 
+FUNC_DATA DATE, 
+FUNC_FGTS INT, 
+FUNC_INSS INT 
+)
+
+INSERT INTO DEPARTAMENTO VALUES ('COMPRAS',200) 
+INSERT INTO DEPARTAMENTO VALUES ('RH',220) 
+INSERT INTO DEPARTAMENTO VALUES ('TI',240)
+
+INSERT INTO FUNCIONARIO VALUES ('PEDRO',3,10.5,'01-04-2020',5,17) 
+INSERT INTO FUNCIONARIO VALUES ('JOAO',2,12.3,'15-03-2020',8,8) 
+INSERT INTO FUNCIONARIO VALUES ('MANUEL',2,16.8,'22-02-2020',7,15) 
+INSERT INTO FUNCIONARIO VALUES ('PATRICIA',1,20.7,'27-03-2020',4,7) 
+INSERT INTO FUNCIONARIO VALUES ('SALETE',3,18.8,'12-04-2020',10,12)
+
+SELECT * FROM DEPARTAMENTO
+SELECT * FROM FUNCIONARIO
+
+
+
+--------------------------------------------------------- Exercícios dia 09/06/2022 - Resoluções corrigidas ---------------------------------------------------------
