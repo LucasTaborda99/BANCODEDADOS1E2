@@ -2739,6 +2739,41 @@ INSERT INTO FUNCIONARIO VALUES ('SALETE',3,18.8,'12-04-2020',10,12)
 SELECT * FROM DEPARTAMENTO
 SELECT * FROM FUNCIONARIO
 
+DECLARE cr_empresa CURSOR FOR
+SELECT FUNC_NOME, FUNC_DEPTO, FUNC_SALARIO_HORA, FUNC_FGTS, FUNC_INSS FROM FUNCIONARIO
 
+OPEN cr_empresa
+DECLARE @nome varchar(40), @func_dpto int, @func_salario_hora numeric(12, 2),
+@func_fgts numeric(12, 2), @func_inss numeric(12, 2), @depto_nome varchar(40),
+@salario_total numeric(12, 2), @valor_fgts numeric(12, 2), @valor_inss numeric(12, 2)
 
+FETCH NEXT FROM cr_empresa INTO @nome, @func_dpto, @func_salario_hora, @func_fgts, @func_inss
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	SET @nome = (SELECT FUNC_NOME FROM FUNCIONARIO
+					INNER JOIN DEPARTAMENTO
+					ON FUNC_DEPTO = DEPTO_COD
+					WHERE FUNC_NOME = 'JOAO')
+	SET @depto_nome = (SELECT DEPTO_NOME FROM DEPARTAMENTO
+						INNER JOIN FUNCIONARIO
+						ON FUNC_DEPTO = DEPTO_COD 
+						WHERE FUNC_NOME = @nome)
+	SET @salario_total = (SELECT (FUNC_SALARIO_HORA * DEPTO_QTDE_HORAS) FROM DEPARTAMENTO
+							INNER JOIN FUNCIONARIO
+							ON FUNC_DEPTO = DEPTO_COD 
+							WHERE FUNC_NOME = @nome)
+	SET @valor_fgts = @salario_total * (@func_fgts / 100)
+	SET @valor_inss = @salario_total * (@func_inss / 100)
+
+	IF (@depto_nome = 'TI' OR @depto_nome = 'RH')
+		BEGIN
+			SELECT @nome AS 'Nome do Funcionário', @depto_nome AS 'Nome do Departamento', @salario_total AS 'Salário Total (R$)', @valor_fgts AS 'Valor Total do FGTS (R$)', @valor_inss AS 'Valor Total do INSS (R$)', 
+			@func_salario_hora AS 'Salario por hora do funcionário', @func_fgts AS 'Porcentagem de FGTS', @func_inss AS 'Porcentagem de INSS'
+		END
+	FETCH NEXT FROM cr_empresa INTO @nome, @func_dpto, @func_salario_hora, @func_fgts, @func_inss
+
+END
+CLOSE cr_empresa
+DEALLOCATE cr_empresa
 --------------------------------------------------------- Exercícios dia 09/06/2022 - Resoluções corrigidas ---------------------------------------------------------
